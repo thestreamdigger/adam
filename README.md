@@ -81,6 +81,7 @@ Note: The rotary encoder is configured directly in moOde's Audio settings.
 3. Connect all the hardware components (I'm working on a detailed schematic to share soon).
 4. Edit `tempo.cfg` to match your setup and preferences.
 5. To start Adam, run these two scripts:
+   
    ```
    sudo python3 tempo.py
    sudo python3 control.py
