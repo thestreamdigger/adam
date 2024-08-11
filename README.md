@@ -5,8 +5,8 @@
 Adam is my DIY project that brings a touch of nostalgia to modern music playback. It adds a simple, yet charming visual interface to a Raspberry Pi running [moOde audio player](https://moodeaudio.org/). Inspired by the classic CD players I grew up with, Adam provides basic visual feedback about music playback using a 4-digit 7-segment LED display, five indicator LEDs, and a rotary encoder.
 
 The main components I've put together are:
-1. A 4-digit 7-segment LED display (controlled by a [TM1637 chip](https://www.makerguides.com/wp-content/uploads/2019/08/TM1637-Datasheet.pdf)) showing track numbers, playback time, or volume.
-2. Four LEDs indicating [MPD](https://www.musicpd.org/) states: Single, Random, Repeat, and Consume.
+1. A 4-digit 7-segment LED display (controlled by a TM1637 chip) showing track numbers, playback time, or volume.
+2. Four LEDs indicating MPD states: Single, Random, Repeat, and Consume.
 3. One LED for indicating errors or connection issues.
 4. A rotary encoder with an integrated push button for volume control and additional actions.
 
@@ -76,7 +76,7 @@ Note: The rotary encoder is configured directly in moOde's Audio settings.
 
 ## Usage
 
-1. First, install [moOde Audio Player](https://moodeaudio.org/) on your Raspberry Pi.
+1. First, install [moOde audio player](https://moodeaudio.org/) on your Raspberry Pi.
 2. Clone this repository to your Pi.
 3. Connect all the hardware components (I'm working on a detailed schematic to share soon).
 4. Edit `tempo.cfg` to match your setup and preferences.
@@ -91,7 +91,7 @@ I recommend setting up systemd services for automatic startup of these three scr
 
 ## Remote Control Integration
 
-In my personal setup, I use a [FLIRC USB dongle](https://flirc.tv/), which lets me use an infrared remote control. I highly recommend it for its versatility. You can find instructions for setting it up with moOde in their forum.
+In my personal setup, I use a [FLIRC](https://flirc.tv/), which lets me use an infrared remote control. I highly recommend it for its versatility. You can find instructions for setting it up with moOde in their forum.
 
 ## Contributions
 
@@ -99,18 +99,18 @@ While Adam started as a personal project, I'm excited to share it with the commu
 
 ## Author's Note
 
-Adam is my first major project in Python and my first DIY project of this scale. Bringing this project to life has been a significant personal achievement for me. I hope it inspires you to find creative ways to interact with your digital music collection and maybe even contribute to a vibrant community of audio enthusiasts and DIY creators.
+Bringing this to life has been a significant personal achievement for me. I hope it inspires you to find creative ways to interact with your digital music collection.
 
 ## Acknowledgments
 
-A big thank you to Mike Stax, his commitment to [Ugly Things](www.ugly-things.com) inspires me a lot.
-
-## License
-
-I'm releasing this project under the GNU General Public License v3.0. If you distribute this software or any derivative works, you must do so under the same license (GPL-3.0).
+- [TM1637 datasheet](https://www.makerguides.com/wp-content/uploads/2019/08/TM1637-Datasheet.pdf)
+- [moOde audio player](https://moodeaudio.org/)
+- [MPD (Music Player Daemon)](https://www.musicpd.org/)
 
 ## Version and Compatibility
 
-Current version: 1.0
-
-I've tested this with moOde audio player version 8.3.9
+- Current version: 1.0
+- Tested with:
+  - moOde audio player version 8.3.9
+  - CAVA version 0.10.2
+  - Raspberry Pi 4 Model B (but should work with other models)
