@@ -2,11 +2,11 @@
 
 ## Overview
 
-Adam is my DIY project that brings a touch of nostalgia to modern music playback. It adds a simple, yet charming visual interface to a Raspberry Pi running moOde audio player. Inspired by the classic CD players I grew up with, Adam provides basic visual feedback about music playback using a 4-digit 7-segment LED display, five indicator LEDs, and a rotary encoder.
+Adam is my DIY project that brings a touch of nostalgia to modern music playback. It adds a simple, yet charming visual interface to a Raspberry Pi running [moOde audio player](https://moodeaudio.org/). Inspired by the classic CD players I grew up with, Adam provides basic visual feedback about music playback using a 4-digit 7-segment LED display, five indicator LEDs, and a rotary encoder.
 
 The main components I've put together are:
-1. A 4-digit 7-segment LED display (controlled by a TM1637 chip) showing track numbers, playback time, or volume.
-2. Four LEDs indicating MPD states: Single, Random, Repeat, and Consume.
+1. A 4-digit 7-segment LED display (controlled by a [TM1637 chip](https://www.makerguides.com/wp-content/uploads/2019/08/TM1637-Datasheet.pdf)) showing track numbers, playback time, or volume.
+2. Four LEDs indicating [MPD](https://www.musicpd.org/) states: Single, Random, Repeat, and Consume.
 3. One LED for indicating errors or connection issues.
 4. A rotary encoder with an integrated push button for volume control and additional actions.
 
@@ -76,7 +76,7 @@ Note: The rotary encoder is configured directly in moOde's Audio settings.
 
 ## Usage
 
-1. First, install moOde Audio Player on your Raspberry Pi.
+1. First, install [moOde Audio Player](https://moodeaudio.org/) on your Raspberry Pi.
 2. Clone this repository to your Pi.
 3. Connect all the hardware components (I'm working on a detailed schematic to share soon).
 4. Edit `tempo.cfg` to match your setup and preferences.
@@ -87,11 +87,11 @@ Note: The rotary encoder is configured directly in moOde's Audio settings.
    sudo python3 button-control.py
    ```
 
-I recommend setting up systemd services for automatic startup. I've included detailed instructions in the INSTALL.md file.
+I recommend setting up systemd services for automatic startup of these three scripts. I'll include detailed instructions in the upcomming INSTALL.md file.
 
 ## Remote Control Integration
 
-In my personal setup, I use a FLIRC USB dongle, which lets me use an infrared remote control. I highly recommend it for its versatility. You can find instructions for setting it up with moOde in their forum.
+In my personal setup, I use a [FLIRC USB dongle](https://flirc.tv/), which lets me use an infrared remote control. I highly recommend it for its versatility. You can find instructions for setting it up with moOde in their forum.
 
 ## Contributions
 
@@ -103,7 +103,7 @@ Adam is my first major project in Python and my first DIY project of this scale.
 
 ## Acknowledgments
 
-A big thank you to the moOde audio player project. Their outstanding audio platform and commitment to open-source principles really inspires me.
+A big thank you to Mike Stax, his commitment to [Ugly Things](www.ugly-things.com) inspires me a lot.
 
 ## License
 
