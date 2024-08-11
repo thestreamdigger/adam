@@ -2,7 +2,7 @@
 
 ## Overview
 
-Adam is my DIY project that brings a touch of nostalgia to modern music playback. It adds a simple, yet charming visual interface to a Raspberry Pi running [moOde audio player](https://moodeaudio.org/). Inspired by the classic CD players I grew up with, Adam provides basic visual feedback about music playback using a 4-digit 7-segment LED display, five indicator LEDs, and a rotary encoder.
+Adam is my DIY project that brings a touch of nostalgia to modern music playback. It adds a simple, yet charming visual interface to a Raspberry Pi running moOde audio player. Inspired by the classic CD players I grew up with, Adam provides basic visual feedback about music playback using a 4-digit 7-segment LED display, five indicator LEDs, and a rotary encoder.
 
 The main components I've put together are:
 1. A 4-digit 7-segment LED display (controlled by a TM1637 chip) showing track numbers, playback time, or volume.
@@ -76,7 +76,7 @@ Note: The rotary encoder is configured directly in moOde's Audio settings.
 
 ## Usage
 
-1. First, install [moOde audio player](https://moodeaudio.org/) on your Raspberry Pi.
+1. First, install [moOde](https://moodeaudio.org/) on your Raspberry Pi.
 2. Clone this repository to your Pi.
 3. Connect all the hardware components (I'm working on a detailed schematic to share soon).
 4. Edit `tempo.cfg` to match your setup and preferences.
