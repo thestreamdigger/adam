@@ -1,4 +1,4 @@
-# Adam: digital retro charm
+# Adam: digital retro charm for moOde
 
 ## Overview
 
