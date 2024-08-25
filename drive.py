@@ -13,6 +13,7 @@ LED_RANDOM = 27
 LED_SINGLE = 22
 LED_CONSUME = 10
 LEDS = [LED_REPEAT, LED_RANDOM, LED_SINGLE, LED_CONSUME]
+MOUNT_POINT = '/mnt/'
 
 def setup_gpio():
     GPIO.setmode(GPIO.BCM)
@@ -22,22 +23,29 @@ def setup_gpio():
 def clear_gpio():
     GPIO.cleanup(LEDS)
 
-def run_leds(stop_event):
-    current_led = 0
-    while not stop_event.is_set():
-        GPIO.output(LEDS[current_led], GPIO.HIGH)
-        time.sleep(0.5)
-        GPIO.output(LEDS[current_led], GPIO.LOW)
-        current_led = (current_led + 1) % len(LEDS)
+def blink_pattern(pattern, duration=0.2):
+    for step in pattern:
+        for i, state in enumerate(step):
+            GPIO.output(LEDS[i], state)
+        time.sleep(duration)
+    for led in LEDS:
+        GPIO.output(led, GPIO.LOW)
 
-def blink_leds(blink_count=3, blink_duration=0.5):
-    for _ in range(blink_count):
-        for led in LEDS:
-            GPIO.output(led, GPIO.HIGH)
-        time.sleep(blink_duration)
-        for led in LEDS:
-            GPIO.output(led, GPIO.LOW)
-        time.sleep(blink_duration)
+PATTERNS = {
+    'copying': [[1,0,1,0], [1,1,1,1], [0,1,0,1], [0,0,0,0]],
+    'error': [[1,1,1,1], [0,0,0,0]] * 3
+}
+
+def indicate_state(state, duration=None):
+    if state in PATTERNS:
+        if state == 'copying' and duration:
+            start_time = time.time()
+            while time.time() - start_time < duration:
+                blink_pattern(PATTERNS[state])
+        else:
+            blink_pattern(PATTERNS[state])
+    else:
+        print(f"Pattern not defined for state: {state}")
 
 def eject_usb(drive):
     try:
@@ -73,10 +81,18 @@ def copy_to_usb(full_path, usb_drive):
         if not os.path.exists(album_dir):
             print(f"Album directory not found: {album_dir}")
             return False
+        
+        copying_event = threading.Event()
+        copying_thread = threading.Thread(target=indicate_state, args=('copying',), kwargs={'duration': float('inf')})
+        copying_thread.start()
+        
         for file in os.listdir(album_dir):
             src = os.path.join(album_dir, file)
             if os.path.isfile(src):
                 shutil.copy2(src, os.path.join(dest_dir, file))
+        
+        copying_event.set()
+        copying_thread.join(timeout=0.1)
         return True
     except Exception as e:
         print(f"Error copying files to USB: {e}")
@@ -84,44 +100,39 @@ def copy_to_usb(full_path, usb_drive):
 
 def stop_service():
     os.system("pkill -f control.py")
-    os.system("sudo systemctl stop control.service")
+    os.system("sudo systemctl stop led_control.service")
 
 def start_service():
-    os.system("sudo systemctl start control.service")
+    os.system("sudo systemctl start led_control.service")
 
 def main():
     stop_service()
     setup_gpio()
-    stop_event = threading.Event()
-    leds_thread = None
     client = MPDClient()
     try:
         client.connect(MPD_HOST, MPD_PORT)
         song = client.currentsong()
         song_path = song.get('file', '') if song else ''
-        if song_path and not song_path.startswith('/mnt/'):
-            song_path = '/mnt/' + song_path.strip('/')
+        if song_path and not song_path.startswith(MOUNT_POINT):
+            song_path = os.path.join(MOUNT_POINT, song_path.strip('/'))
         if not os.path.exists(song_path):
-            blink_leds()
+            indicate_state('error')
         else:
             usb_drive = find_usb_drive()
             if usb_drive and not usb_drive.startswith("Error"):
-                leds_thread = threading.Thread(target=run_leds, args=(stop_event,))
-                leds_thread.start()
-                if not copy_to_usb(song_path, usb_drive):
-                    blink_leds()
-                eject_usb(usb_drive)
-                stop_event.set()
+                if copy_to_usb(song_path, usb_drive):
+                    eject_usb(usb_drive)
+                else:
+                    indicate_state('error')
             else:
-                blink_leds()
+                print("No USB drive found or multiple drives detected.")
+                indicate_state('error')
     except Exception as e:
         print(f"An error occurred: {e}")
+        indicate_state('error')
     finally:
         client.close()
         client.disconnect()
-        stop_event.set()
-        if leds_thread:
-            leds_thread.join()
         clear_gpio()
         start_service()
 
