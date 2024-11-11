@@ -110,6 +110,16 @@ class PlayerService:
         else:
             self.display.clear()
 
+    def _convert_time_to_minutes_seconds(self, time_value):
+        """Utility method to convert time to minutes and seconds"""
+        try:
+            time_float = float(time_value)
+            minutes = int(time_float) // 60
+            seconds = int(time_float) % 60
+            return minutes, seconds
+        except (ValueError, TypeError):
+            return None, None
+
     def _update_time_display(self, elapsed_time, total_time):
         """Update display with current time information"""
         try:
@@ -117,10 +127,12 @@ class PlayerService:
                 time_value = float(total_time) - float(elapsed_time)
             else:
                 time_value = float(elapsed_time)
-                
-            minutes = int(time_value) // 60
-            seconds = int(time_value) % 60
-            self.display.show_time(minutes, seconds, True)
+            
+            minutes, seconds = self._convert_time_to_minutes_seconds(time_value)
+            if minutes is not None:
+                self.display.show_time(minutes, seconds, True)
+            else:
+                self.display.show_dashes()
         except (ValueError, TypeError):
             self.display.show_dashes()
 
@@ -134,6 +146,8 @@ class PlayerService:
             return
         
         state = status.get('state', 'stop')
+        elapsed_time = status.get('elapsed', '0')
+        total_time = status.get('duration', '0')
         
         if state == 'play':
             current_song = self.mpd.get_current_song()
@@ -142,15 +156,10 @@ class PlayerService:
             if current_time < self.track_display_until:
                 return
                 
-            elapsed_time = status.get('elapsed', '0')
-            total_time = status.get('duration', '0')
             self._update_time_display(elapsed_time, total_time)
             
         elif state == 'pause':
-            self._update_pause_display(
-                status.get('elapsed', '0'),
-                status.get('duration', '0')
-            )
+            self._update_pause_display(elapsed_time, total_time)
         elif state == 'stop':
             self._update_stop_display()
 
