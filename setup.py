@@ -11,6 +11,7 @@ setup(
         "gpiozero>=2.0.1",
         "watchdog>=6.0.0",
         "lgpio>=0.2.2.0",
+        "psutil>=5.8.0",
     ],
     author="StreamDigger",
     description="Adam for MPD",

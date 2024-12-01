@@ -171,13 +171,13 @@ class TM1637:
                 return
             
             # Format number with leading zero
-            num_str = f"{number:02d}"  # Garante dois dígitos
+            num_str = f"{number:02d}"  # Ensure two digits
             
             segments = [
-                self.CHAR_MAP['-'],      # Primeiro traço
-                self.CHAR_MAP[num_str[0]], # Primeiro dígito
-                self.CHAR_MAP[num_str[1]], # Segundo dígito
-                self.CHAR_MAP['-']       # Último traço
+                self.CHAR_MAP['-'],      # First dash
+                self.CHAR_MAP[num_str[0]], # First digit
+                self.CHAR_MAP[num_str[1]], # Second digit
+                self.CHAR_MAP['-']       # Last dash
             ]
             
             self._write_segments(segments, False)

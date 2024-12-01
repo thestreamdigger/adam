@@ -51,18 +51,40 @@ class ButtonController:
             self._execute_short_press()
 
     def _execute_short_press(self):
-        """Execute the action for a short press - activate roulette mode"""
+        """Execute the action for a short press"""
         self.last_command_time = time.time()
         script_path = self.config.get('paths.roulette')
-        if os.path.exists(script_path):
+        
+        if not script_path:
+            print("ERROR: Script configuration not found")
+            return
+        
+        if not os.path.exists(script_path):
+            print("ERROR: Script not found")
+            return
+        
+        try:
             subprocess.run(['sudo', script_path], check=True)
+        except subprocess.CalledProcessError:
+            print("ERROR: Script execution failed")
 
     def _execute_long_press(self):
-        """Execute the action for a long press - shutdown system"""
+        """Execute the action for a long press"""
         self.last_command_time = time.time()
         script_path = self.config.get('paths.shutdown')
-        if os.path.exists(script_path):
+        
+        if not script_path:
+            print("ERROR: Script configuration not found")
+            return
+        
+        if not os.path.exists(script_path):
+            print("ERROR: Script not found")
+            return
+        
+        try:
             subprocess.run(['sudo', script_path], check=True)
+        except subprocess.CalledProcessError:
+            print("ERROR: Script execution failed")
 
     def cleanup(self):
         """Cleanup resources"""

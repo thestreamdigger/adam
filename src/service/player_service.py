@@ -200,7 +200,7 @@ class PlayerService:
                     # Update display
                     self._update_display(status)
                 
-                # Define o intervalo de atualização
+                # Set update interval
                 current_time = time.time()
                 update_interval = (self.volume_update_interval 
                                  if current_time < self.volume_display_until 

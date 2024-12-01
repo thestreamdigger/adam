@@ -13,7 +13,8 @@
       "repeat": 17,
       "random": 27,
       "single": 22,
-      "consume": 10
+      "consume": 10,
+      "copy": 12
     }
   },
   "timing": {
@@ -24,7 +25,7 @@
   },
   "display": {
     "brightness": 2,
-    "mode": "elapsed",
+    "mode": "remaining",
     "pause_mode": {
       "blink_interval": 1
     },
@@ -38,7 +39,25 @@
     }
   },
   "paths": {
-    "roulette": "/home/pi/adam/scripts/roulette.sh",
-    "shutdown": "/home/pi/adam/scripts/shutdown.sh"
+    "roulette": "/home/pi/adam2/scripts/roulette.sh",
+    "shutdown": "/home/pi/adam2/scripts/shutdown.sh"
+  },
+  "copy": {
+    "destination_skip_folders": [
+      "Music",
+      "Metal"
+    ],
+    "path_structure": {
+      "min_depth": 4,
+      "artist_level": 2,
+      "album_level": 3,
+      "music_root": "/var/lib/mpd/music",
+      "preserve_levels": [
+        2,
+        3,
+        4
+      ]
+    },
+    "min_usb_size_gb": 4
   }
 }

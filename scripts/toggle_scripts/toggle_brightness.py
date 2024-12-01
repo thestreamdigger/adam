@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
 import json
 import os
 import sys
 
 # Correct path to the settings.json configuration file
-CONFIG_FILE = '/home/pi/adam/config/settings.json'
+CONFIG_FILE = '/home/pi/adam2/config/settings.json'
 
 def read_config():
     """Read the current configuration from the JSON file."""
