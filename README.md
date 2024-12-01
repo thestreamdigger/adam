@@ -1,4 +1,4 @@
-# Adam: Digital Retro Charm for moOde
+# Adam: Digital Retro Charm for MPD
 
 ## Overview
 
