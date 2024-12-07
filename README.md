@@ -11,24 +11,28 @@ Adam is my DIY project that brings a touch of nostalgia to modern music playback
      - Track numbers (format: '-XX-')
      - Playback time (elapsed or remaining)
      - Volume levels (format: '--XX')
-   - Five status LEDs indicating MPD states:
-     - Repeat
-     - Random
-     - Single
-     - Consume
-     - Copy (new: indicates USB copy operations)
+   - Five status LEDs indicating:
+     - Repeat mode
+     - Random mode
+     - Single mode
+     - Consume mode
+     - USB Copy status
 
 2. **Controls**:
    - Push button with multiple functions:
      - Short press: Activates "roulette" mode (random playback)
      - Long press: System shutdown
+     - Double press: Initiates USB album copy (when USB drive is detected)
 
-3. **New Features**:
-   - **Adam Go**: Quick USB copy of currently playing album
-     - Automatic USB drive detection
-     - Configurable directory structure preservation
-     - Visual feedback through copy LED
-     - Disk space verification support
+3. **USB Copy Features**:
+   - Quick copy of currently playing album to USB drive
+   - Smart USB drive detection and mounting
+   - Automatic directory structure preservation
+   - Visual feedback through dedicated status LED:
+     - Solid: Copy in progress
+     - Blinking: Error occurred
+     - Off: Ready for new operation
+   - Free space verification before copy
 
 ## Configuration
 
@@ -38,9 +42,11 @@ All settings are centralized in `config/settings.json`. Key configurations inclu
 - Display settings (brightness, mode)
 - Timing parameters
 - USB copy settings:
-  - Minimum USB drive size
-  - Directory structure
-  - Skip folders
+  - Minimum required USB drive size
+  - Directory structure preservation options
+  - Skip patterns for files/folders
+  - Target directory structure
+  - Copy verification options
 
 ## Installation
 
@@ -48,21 +54,19 @@ All settings are centralized in `config/settings.json`. Key configurations inclu
 
 2. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/adam.git
-   cd adam
+   git clone https://github.com/thestreamdigger/adam-mpd-tm1637-display.git
+   cd adam-mpd-tm1637-display
    ```
 
 3. Create and activate a virtual environment:
    ```bash
    python3 -m venv venv
-   source venv/bin/activate  # On Linux/Mac
-   # or
-   .\venv\Scripts\activate  # On Windows
+   source venv/bin/activate
    ```
 
 4. Install dependencies:
    ```bash
-   pip install -r requirements.txt
+   pip install -e .
    ```
 
 5. Configure your GPIO pins in `config/settings.json`
@@ -88,19 +92,28 @@ To run Adam as a system service:
 
 ## Utility Scripts
 
-- `scripts/adam_go.py`: Initiates current album copy to USB
+- `scripts/adam_go.py`: Quick copy of current album to USB
 - `scripts/roulette.sh`: Activates random playback mode
 - `scripts/roulette_album.sh`: Random album playback
 - `scripts/shutdown.sh`: Safe system shutdown
-- `scripts/toggle_scripts/`: System state toggle scripts
+- `scripts/toggle_scripts/`: Various toggle scripts for system states
+
+## Using USB Copy Feature
+
+1. Insert a USB drive (minimum size configurable in settings)
+2. While music is playing, double-press the button or run `adam_go.py`
+3. The Copy LED will light up during the transfer
+4. When the LED turns off, your music is ready on the USB drive
+5. Check the system logs for any copy details or errors
 
 ## Version and Compatibility
 
-- Current version: 0.3
+- Current version: 0.4
 - Tested with:
   - moOde audio player 8.3.9
   - Raspberry Pi 4 Model B (compatible with other models)
   - Python 3.7+
+  - Various USB drives (FAT32, NTFS, exFAT)
 
 ## Acknowledgments
 
