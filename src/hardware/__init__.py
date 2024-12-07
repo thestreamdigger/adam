@@ -1,4 +1,3 @@
-"""Hardware control components"""
 from .led.controller import LEDController
 from .display.tm1637 import TM1637
 from .button.controller import ButtonController

@@ -2,7 +2,6 @@ from mpd import MPDClient as BaseMPDClient
 import time
 
 class MPDClient:
-    """MPD client with automatic reconnection"""
     def __init__(self, host='localhost', port=6600):
         self.host = host
         self.port = port
@@ -12,7 +11,6 @@ class MPDClient:
         self._retry_interval = 5
 
     def connect(self):
-        """Connect to MPD with retry logic"""
         current_time = time.time()
         if not self._connected and (current_time - self._last_try) >= self._retry_interval:
             try:
@@ -25,7 +23,6 @@ class MPDClient:
         return self._connected
 
     def get_status(self):
-        """Get MPD status safely"""
         try:
             if self.connect():
                 return self._client.status()
@@ -34,7 +31,6 @@ class MPDClient:
         return None
 
     def get_current_song(self):
-        """Get current song information safely"""
         try:
             if self.connect():
                 return self._client.currentsong()
@@ -43,7 +39,6 @@ class MPDClient:
         return None
 
     def close(self):
-        """Close MPD connection safely"""
         if self._connected:
             try:
                 self._client.close()
@@ -52,7 +47,6 @@ class MPDClient:
                 self._connected = False
 
     def get_playlist_info(self):
-        """Get playlist information safely"""
         try:
             if self.connect():
                 status = self._client.status()

@@ -25,7 +25,7 @@
   },
   "display": {
     "brightness": 2,
-    "mode": "remaining",
+    "mode": "elapsed",
     "pause_mode": {
       "blink_interval": 1
     },

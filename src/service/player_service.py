@@ -7,7 +7,6 @@ from hardware.display.tm1637 import TM1637
 from hardware.button.controller import ButtonController
 
 class PlayerService:
-    """Main service that coordinates all components"""
     def __init__(self):
         self.config = Config()
         self.mpd = MPDClient()
@@ -33,16 +32,12 @@ class PlayerService:
         self._load_display_config()
 
     def _load_display_config(self):
-        """Load all display-related configurations"""
-        # Load existing stop mode config
         self._load_stop_mode_config()
         
-        # Load pause and play mode configs
         self.pause_blink_interval = self.config.get('display.pause_mode.blink_interval', 1)
         self.track_number_time = self.config.get('display.play_mode.track_number_time', 2)
 
     def _load_stop_mode_config(self):
-        """Load stop mode display configuration"""
         self.stop_mode_times = {
             'symbol': self.config.get('display.stop_mode.stop_symbol_time', 2),
             'tracks': self.config.get('display.stop_mode.track_total_time', 2),
@@ -50,12 +45,10 @@ class PlayerService:
         }
 
     def _handle_config_update(self):
-        """Handle configuration updates"""
         self.display_mode = self.config.get('display.mode', 'elapsed')
         self._load_display_config()
 
     def _update_stop_display(self):
-        """Handle stop state display rotation"""
         current_time = time.time()
         
         current_duration = self.stop_mode_times.get(
@@ -83,13 +76,11 @@ class PlayerService:
             self.display.show_time(minutes, seconds, True)
 
     def _check_track_change(self, current_song):
-        """Check if track has changed and update display accordingly"""
         if not current_song:
             return
         
         track_number = current_song.get('track', '0')
         
-        # Only update if track number changed
         if track_number and track_number != self.last_track_number:
             self.last_track_number = track_number
             if track_number.isdigit():
@@ -99,8 +90,6 @@ class PlayerService:
                     self.display.show_track_number(track_num)
 
     def _update_pause_display(self, elapsed_time, total_time):
-        """Handle pause state display with blinking effect"""
-        # Usa tempo absoluto para determinar estado do display
         phase = int(time.time() / self.pause_blink_interval) % 2
         
         if phase == 0:
@@ -111,7 +100,6 @@ class PlayerService:
             self.display.clear()
 
     def _convert_time_to_minutes_seconds(self, time_value):
-        """Utility method to convert time to minutes and seconds"""
         try:
             time_float = float(time_value)
             minutes = int(time_float) // 60
@@ -121,7 +109,6 @@ class PlayerService:
             return None, None
 
     def _update_time_display(self, elapsed_time, total_time):
-        """Update display with current time information"""
         try:
             if self.display_mode == "remaining" and total_time != 'N/A':
                 time_value = float(total_time) - float(elapsed_time)
@@ -137,7 +124,6 @@ class PlayerService:
             self.display.show_dashes()
 
     def _update_display(self, status):
-        """Update display based on current state"""
         current_time = time.time()
         
         if current_time < self.volume_display_until:
@@ -164,7 +150,6 @@ class PlayerService:
             self._update_stop_display()
 
     def show_volume(self, status):
-        """Show volume temporarily"""
         try:
             current_volume = int(status.get('volume', '0'))
             self.display.show_volume(current_volume)
@@ -173,7 +158,6 @@ class PlayerService:
             return
 
     def start(self):
-        """Start the service"""
         self.running = True
         
         def handle_signal(signum, frame):
@@ -188,25 +172,20 @@ class PlayerService:
                 
                 status = self.mpd.get_status()
                 if status:
-                    # Update LEDs
                     self.led_controller.update_from_mpd_status(status)
                     
-                    # Handle volume display
                     current_volume = status.get('volume', '0')
                     if current_volume != self.last_volume:
                         self.show_volume(status)
                         self.last_volume = current_volume
                     
-                    # Update display
                     self._update_display(status)
                 
-                # Set update interval
                 current_time = time.time()
                 update_interval = (self.volume_update_interval 
                                  if current_time < self.volume_display_until 
                                  else self.default_update_interval)
                 
-                # Sleep for remaining time
                 elapsed = time.time() - start_time
                 sleep_time = max(0, update_interval - elapsed)
                 if sleep_time > 0:
@@ -216,7 +195,6 @@ class PlayerService:
             self.cleanup()
 
     def cleanup(self):
-        """Cleanup all resources"""
         self.config.remove_observer(self._handle_config_update)
         self.led_controller.cleanup()
         self.display.cleanup()

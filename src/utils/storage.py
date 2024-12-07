@@ -5,60 +5,36 @@ import subprocess
 from typing import Tuple, Optional
 
 def find_usb_drive(min_size_gb: int = 4) -> Optional[str]:
-    """Find suitable USB drive for copying"""
-    print("\n=== USB DRIVE DETECTION DETAILS ===")
-    print(f"Minimum size required: {min_size_gb} GB")
+    print("\n=== USB DRIVE DETECTION ===")
+    print(f"  Required size: {min_size_gb} GB")
     
     partitions = psutil.disk_partitions(all=True)
-    print(f"\nFound {len(partitions)} partitions in system:")
+    print(f"  Found partitions: {len(partitions)}")
     
     for partition in partitions:
-        print(f"\nChecking partition:")
+        print("\n  Checking partition:")
         print(f"  Device: {partition.device}")
         print(f"  Mountpoint: {partition.mountpoint}")
         print(f"  Filesystem: {partition.fstype}")
         print(f"  Options: {partition.opts}")
         
-        if partition.device.startswith(('/dev/sd', '/dev/usb', '/dev/disk')):
-            print("  Status: Potential USB device (correct device pattern)")
+        if is_valid_usb(partition):
+            print("  Status: Valid USB device found")
+            return partition.mountpoint
             
-            result = subprocess.run(['lsblk', '-ndo', 'rm', partition.device], 
-                               capture_output=True, text=True)
-            
-            is_removable = result.stdout.strip() == '1'
-            print(f"  Removable: {is_removable}")
-            
-            if is_removable:
-                try:
-                    usage = psutil.disk_usage(partition.mountpoint)
-                    size_gb = usage.total / (1024 * 1024 * 1024)
-                    free_gb = usage.free / (1024 * 1024 * 1024)
-                    print(f"  Total size: {size_gb:.2f} GB")
-                    print(f"  Free space: {free_gb:.2f} GB")
-                    
-                    if size_gb >= min_size_gb:
-                        print("  Status: SELECTED (meets size requirement)")
-                        return partition.mountpoint
-                    else:
-                        print(f"  Status: Rejected (too small, needs {min_size_gb} GB)")
-                except PermissionError:
-                    print("  Status: Rejected (permission denied)")
-                    continue
-        else:
-            print("  Status: Rejected (not a USB device pattern)")
-    
-    print("\nNo suitable USB drive found")
+    print("ERROR: No compatible USB device found")
     return None
 
 def copy_directory(source: str, destination: str) -> Tuple[int, int]:
-    """Copy directory with tracking of files and size"""
     if not os.path.exists(source):
+        print(f"ERROR: Source directory not found: {source}")
         raise FileNotFoundError(f"Source directory not found: {source}")
     
-    print("\nAnalyzing source directory...")
-    total_files = sum(len(files) for _, _, files in os.walk(source))
-    print(f"Total files found: {total_files}")
-        
+    print("\n=== COPY ANALYSIS ===")
+    print(f"  Total files: {total_files}")
+    print(f"  Source: {source}")
+    print(f"  Destination: {destination}")
+    
     files_copied = 0
     total_size = 0
     
