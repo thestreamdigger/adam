@@ -54,8 +54,8 @@ All settings are centralized in `config/settings.json`. Key configurations inclu
 
 2. Clone this repository:
    ```bash
-   git clone https://github.com/thestreamdigger/adam-mpd-tm1637-display.git
-   cd adam-mpd-tm1637-display
+   git clone https://github.com/thestreamdigger/adam-mpd.git
+   cd adam-mpd
    ```
 
 3. Create and activate a virtual environment:
