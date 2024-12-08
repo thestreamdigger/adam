@@ -10,6 +10,7 @@ class LEDController:
 
     def _setup_leds(self):
         """Setup LED objects with current config"""
+        print("[INFO]   Setting up LEDs...")
         led_pins = self.config.get('gpio.leds')
         self.leds = {
             'repeat': LED(led_pins['repeat']),
@@ -44,5 +45,6 @@ class LEDController:
 
     def cleanup(self):
         """Cleanup resources"""
+        print("[INFO]   Shutting down LEDs...")
         self.config.remove_observer(self._setup_leds)
         self.all_off()

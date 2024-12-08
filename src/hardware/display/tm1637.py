@@ -76,6 +76,8 @@ class TM1637:
         number = int(number)
         if not -999 <= number <= 9999:
             return
+            
+        print(f"[DEBUG]  Displaying number: {number}")
 
         digits = f"{abs(number):04d}"
         segments = []
@@ -119,6 +121,7 @@ class TM1637:
         self._write_segments([0, 0, 0, 0])
 
     def cleanup(self):
+        print("[INFO]   Shutting down display...")
         self.config.remove_observer(self.update_brightness)
         self.clear()
         self.clk.close()

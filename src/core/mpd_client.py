@@ -14,8 +14,10 @@ class MPDClient:
         current_time = time.time()
         if not self._connected and (current_time - self._last_try) >= self._retry_interval:
             try:
+                print("[INFO]   Attempting to connect to MPD...")
                 self._client.connect(self.host, self.port)
                 self._connected = True
+                print(f"[INFO]   Connected to MPD at {self.host}:{self.port}")
                 return True
             except:
                 self._connected = False
@@ -25,7 +27,8 @@ class MPDClient:
     def get_status(self):
         try:
             if self.connect():
-                return self._client.status()
+                status = self._client.status()
+                return status
         except:
             self._connected = False
         return None
@@ -41,6 +44,7 @@ class MPDClient:
     def close(self):
         if self._connected:
             try:
+                print("[INFO]   Closing MPD connection...")
                 self._client.close()
                 self._client.disconnect()
             finally:

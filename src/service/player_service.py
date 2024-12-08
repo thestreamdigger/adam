@@ -125,13 +125,13 @@ class PlayerService:
 
     def _update_display(self, status):
         current_time = time.time()
+        state = status.get('state', 'stop')
         
         if current_time < self.volume_display_until:
             current_volume = int(status.get('volume', '0'))
             self.display.show_volume(current_volume)
             return
         
-        state = status.get('state', 'stop')
         elapsed_time = status.get('elapsed', '0')
         total_time = status.get('duration', '0')
         
@@ -158,6 +158,8 @@ class PlayerService:
             return
 
     def start(self):
+        print("[INFO]   Player Service started")
+        print("[INFO]   Waiting for MPD connection...")
         self.running = True
         
         def handle_signal(signum, frame):
@@ -195,6 +197,7 @@ class PlayerService:
             self.cleanup()
 
     def cleanup(self):
+        print("[INFO]   Shutting down Player Service...")
         self.config.remove_observer(self._handle_config_update)
         self.led_controller.cleanup()
         self.display.cleanup()

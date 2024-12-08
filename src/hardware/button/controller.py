@@ -13,6 +13,7 @@ class ButtonController:
         self.config.add_observer(self._setup_button)
 
     def _setup_button(self):
+        print("[INFO]   Setting up button...")
         button_pin = self.config.get('gpio.button')
         self.long_press_time = self.config.get('timing.long_press_time', 2)
         
@@ -46,38 +47,40 @@ class ButtonController:
             self._execute_short_press()
 
     def _execute_short_press(self):
+        print("[DEBUG]  Button: Short press detected")
         self.last_command_time = time.time()
         script_path = self.config.get('paths.roulette')
         
         if not script_path:
-            print("ERROR: Script configuration not found")
+            print("[ERROR]  Script configuration not found")
             return
         
         if not os.path.exists(script_path):
-            print("ERROR: Script file not found")
+            print("[ERROR]  Script file not found")
             return
         
         try:
             subprocess.run(['sudo', script_path], check=True)
         except subprocess.CalledProcessError:
-            print("ERROR: Script execution failed")
+            print("[ERROR]  Script execution failed")
 
     def _execute_long_press(self):
+        print("[DEBUG]  Button: Long press detected")
         self.last_command_time = time.time()
         script_path = self.config.get('paths.shutdown')
         
         if not script_path:
-            print("ERROR: Script configuration not found")
+            print("[ERROR]  Script configuration not found")
             return
         
         if not os.path.exists(script_path):
-            print("ERROR: Script not found")
+            print("[ERROR]  Script not found")
             return
         
         try:
             subprocess.run(['sudo', script_path], check=True)
         except subprocess.CalledProcessError:
-            print("ERROR: Script execution failed")
+            print("[ERROR]  Script execution failed")
 
     def cleanup(self):
         self.config.remove_observer(self._setup_button)

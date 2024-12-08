@@ -43,7 +43,7 @@ class Config:
             with open(self.config_path, 'r') as f:
                 self.config = json.load(f)
         except Exception as e:
-            print(f"ERROR: Failed to load config: {e}")
+            print("[ERROR]  Failed to load config: {e}")
 
     def get(self, key, default=None):
         try:
@@ -67,7 +67,7 @@ class Config:
             try:
                 callback()
             except Exception as e:
-                print(f"ERROR: Failed to notify observer: {e}")
+                print("[ERROR]  Failed to notify observer: {e}")
 
     def stop_observer(self):
         self.observer.stop()

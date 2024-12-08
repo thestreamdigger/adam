@@ -5,76 +5,75 @@ import subprocess
 from typing import Tuple, Optional
 
 def find_usb_drive(min_size_gb: int = 4) -> Optional[str]:
-    print("\n=== USB DRIVE DETECTION ===")
-    print(f"  Required size: {min_size_gb} GB")
+    print("[INFO]   === USB DRIVE DETECTION ===")
+    print(f"[INFO]   Required size: {min_size_gb} GB")
     
     partitions = psutil.disk_partitions(all=True)
-    print(f"  Found partitions: {len(partitions)}")
+    print(f"[DEBUG]  Found partitions: {len(partitions)}")
     
     for partition in partitions:
-        print("\n  Checking partition:")
-        print(f"  Device: {partition.device}")
-        print(f"  Mountpoint: {partition.mountpoint}")
-        print(f"  Filesystem: {partition.fstype}")
-        print(f"  Options: {partition.opts}")
+        print("[INFO]   Checking partition:")
+        print(f"[DEBUG]  Device: {partition.device}")
+        print(f"[DEBUG]  Mountpoint: {partition.mountpoint}")
+        print(f"[DEBUG]  Filesystem: {partition.fstype}")
+        print(f"[DEBUG]  Options: {partition.opts}")
         
         if is_valid_usb(partition):
-            print("  Status: Valid USB device found")
+            print("[OK]     Valid USB device found")
             return partition.mountpoint
             
-    print("ERROR: No compatible USB device found")
+    print("[ERROR]  No compatible USB device found")
     return None
 
 def copy_directory(source: str, destination: str) -> Tuple[int, int]:
     if not os.path.exists(source):
-        print(f"ERROR: Source directory not found: {source}")
+        print(f"[ERROR]  Source directory not found: {source}")
         raise FileNotFoundError(f"Source directory not found: {source}")
     
     total_files = sum([len(files) for _, _, files in os.walk(source)])
     
-    print("\n=== COPY ANALYSIS ===")
-    print(f"  Total files: {total_files}")
-    print(f"  Source: {source}")
-    print(f"  Destination: {destination}")
+    print("[INFO]   === COPY ANALYSIS ===")
+    print(f"[DEBUG]  Total files: {total_files}")
+    print(f"[DEBUG]  Source: {source}")
+    print(f"[DEBUG]  Destination: {destination}")
+    
+    print(f"[INFO]   Adjusted destination path: {destination}")
     
     files_copied = 0
     total_size = 0
     
-    destination = os.path.dirname(destination)
-    print(f"\nAdjusted destination path: {destination}")
-    
     for root, dirs, files in os.walk(source):
-        relative_path = os.path.relpath(root, os.path.dirname(source))
-        target_dir = os.path.join(destination, relative_path) if relative_path != '.' else destination
+        relative_path = os.path.relpath(root, source)
+        print(f"[DEBUG]  Processing: {relative_path if relative_path != '.' else 'root'}")
         
-        print(f"Processing directory: {relative_path if relative_path != '.' else 'root'}")
-        print(f"Creating directory: {target_dir}")
+        target_dir = os.path.join(destination) if relative_path == '.' else os.path.join(destination, relative_path)
+        
         os.makedirs(target_dir, exist_ok=True)
-        
-        if dirs:
-            print("Subdirectories to process:", dirs)
+        print(f"[DEBUG]  Creating directory: {target_dir}")
         
         for file in files:
+            files_copied += 1
+            print(f"[WAIT]   Copying file {files_copied}/{total_files}")
+            
             src_file = os.path.join(root, file)
             dst_file = os.path.join(target_dir, file)
             
+            file_size = os.path.getsize(src_file)
+            total_size += file_size
+            
+            print(f"[DEBUG]  Name: {file}")
+            print(f"[DEBUG]  Size: {file_size/1024/1024:.2f} MB")
+            print(f"[DEBUG]  From: {src_file}")
+            print(f"[DEBUG]  To: {dst_file}")
+            
             try:
-                file_size = os.path.getsize(src_file)
-                print(f"\nCopying file ({files_copied + 1}/{total_files}):")
-                print(f"  Name: {file}")
-                print(f"  Size: {file_size/1024/1024:.2f} MB")
-                print(f"  From: {src_file}")
-                print(f"  To: {dst_file}")
-                
                 shutil.copy2(src_file, dst_file)
-                files_copied += 1
-                total_size += file_size
-                print(f"  Status: Successfully copied")
-                print(f"Progress: {files_copied}/{total_files} files")
-                print(f"Total size so far: {total_size/1024/1024:.2f} MB")
+                print("[OK]     File copied successfully")
+                print(f"[INFO]   Progress: {files_copied}/{total_files} files")
+                print(f"[INFO]   Total size: {total_size/1024/1024:.2f} MB")
                 
             except Exception as e:
-                print(f"  ERROR copying {file}: {str(e)}")
+                print(f"[ERROR]  Unable to copy {file}: {str(e)}")
                 raise
     
     return files_copied, total_size
@@ -92,16 +91,16 @@ def is_valid_usb(partition) -> bool:
     try:
         usage = shutil.disk_usage(partition.mountpoint)
         total_size_gb = usage.total / (1024**3)
-        print(f"  Total size: {total_size_gb:.1f} GB")
+        print(f"[INFO]   Drive size: {total_size_gb:.1f} GB")
         
         if total_size_gb < 4:
-            print(f"  Status: Drive too small ({total_size_gb:.1f} GB)")
+            print(f"[WARN]   Drive too small ({total_size_gb:.1f} GB)")
             return False
             
-        print(f"  Free space: {(usage.free / (1024**3)):.1f} GB")
+        print(f"[INFO]   Free space: {(usage.free / (1024**3)):.1f} GB")
         
     except Exception as e:
-        print(f"  Error checking drive size: {str(e)}")
+        print(f"[ERROR]  Failed to check drive size: {str(e)}")
         return False
         
     return True
