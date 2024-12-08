@@ -61,8 +61,11 @@ class USBCopyService:
                 )
                 print(f"  Source directory: {source_dir}")
                 
-                album_path = '/'.join(path_parts[:self.path_structure['album_level']])
-                dest_dir = os.path.join(usb_path, album_path)
+                # Filter out skipped folders from path
+                path_parts = [part for part in path_parts if part not in self.destination_skip_folders]
+                max_level = max(self.path_structure['preserve_levels'])
+                preserved_path = '/'.join(path_parts[:max_level + 1])
+                dest_dir = os.path.join(usb_path, preserved_path)
                 print(f"  Destination directory: {dest_dir}")
                 
                 print("\n=== COPY PROCESS ===")
@@ -71,7 +74,7 @@ class USBCopyService:
                 print("\n=== COPY COMPLETE ===")
                 print(f"  Files copied: {files_copied}")
                 print(f"  Total size: {total_size/1024/1024:.2f} MB")
-                print(f"  Album path: {album_path}")
+                print(f"  Album path: {preserved_path}")
                 
                 print("\n=== DESTINATION CONTENTS ===")
                 for root, dirs, files in os.walk(dest_dir):

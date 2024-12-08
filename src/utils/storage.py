@@ -30,6 +30,8 @@ def copy_directory(source: str, destination: str) -> Tuple[int, int]:
         print(f"ERROR: Source directory not found: {source}")
         raise FileNotFoundError(f"Source directory not found: {source}")
     
+    total_files = sum([len(files) for _, _, files in os.walk(source)])
+    
     print("\n=== COPY ANALYSIS ===")
     print(f"  Total files: {total_files}")
     print(f"  Source: {source}")
@@ -76,3 +78,30 @@ def copy_directory(source: str, destination: str) -> Tuple[int, int]:
                 raise
     
     return files_copied, total_size
+
+def is_valid_usb(partition) -> bool:
+    if not partition.device.startswith('/dev/sd'):
+        return False
+        
+    if not partition.mountpoint:
+        return False
+        
+    if partition.fstype not in ['vfat', 'exfat', 'ntfs', 'ext4']:
+        return False
+        
+    try:
+        usage = shutil.disk_usage(partition.mountpoint)
+        total_size_gb = usage.total / (1024**3)
+        print(f"  Total size: {total_size_gb:.1f} GB")
+        
+        if total_size_gb < 4:
+            print(f"  Status: Drive too small ({total_size_gb:.1f} GB)")
+            return False
+            
+        print(f"  Free space: {(usage.free / (1024**3)):.1f} GB")
+        
+    except Exception as e:
+        print(f"  Error checking drive size: {str(e)}")
+        return False
+        
+    return True
