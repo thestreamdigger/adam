@@ -3,8 +3,8 @@ from setuptools import setup, find_packages
 setup(
     name="adam",
     version="2.0.0",
-    packages=find_packages(where="src"),
-    package_dir={"": "src"},
+    packages=find_packages(),
+    package_dir={"": "."},
     python_requires=">=3.7",
     install_requires=[
         "python-mpd2>=3.1.1",
@@ -15,4 +15,8 @@ setup(
     ],
     author="StreamDigger",
     description="Adam for MPD",
+    package_data={
+        'adam': ['config/*.json'],
+    },
+    include_package_data=True,
 )

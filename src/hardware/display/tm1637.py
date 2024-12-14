@@ -1,6 +1,9 @@
 from gpiozero import DigitalOutputDevice
 import time
-from core.config import Config
+from src.core.config import Config
+from src.utils.logger import Logger
+
+log = Logger()
 
 class TM1637:
     COMMAND1 = 0x40
@@ -16,17 +19,21 @@ class TM1637:
     }
 
     def __init__(self):
+        log.debug("Initializing display")
         self.config = Config()
         self._setup_display()
         self.config.add_observer(self.update_brightness)
+        log.ok("Display initialized")
 
     def _setup_display(self):
+        log.debug("Setting up display pins")
         pins = self.config.get('gpio.display')
         self.clk = DigitalOutputDevice(pins['clk'])
         self.dio = DigitalOutputDevice(pins['dio'])
         self._brightness = self.config.get('display.brightness', 2)
         self._write_data_command()
         self._write_display_control()
+        log.ok("Display setup complete")
 
     def _start(self):
         self.dio.on()
@@ -63,11 +70,14 @@ class TM1637:
         self._stop()
 
     def update_brightness(self):
+        log.debug("Updating display brightness")
         new_brightness = self.config.get('display.brightness', 2)
         if new_brightness != self._brightness:
+            log.info(f"Changing brightness from {self._brightness} to {new_brightness}")
             self._brightness = new_brightness
             self._write_data_command()
             self._write_display_control()
+            log.ok("Brightness updated")
 
     def show_number(self, number, colon=False):
         if not isinstance(number, (int, float)):
@@ -77,7 +87,7 @@ class TM1637:
         if not -999 <= number <= 9999:
             return
             
-        print(f"[DEBUG]  Displaying number: {number}")
+        log.debug(f"Displaying number: {number}")
 
         digits = f"{abs(number):04d}"
         segments = []
@@ -96,6 +106,7 @@ class TM1637:
         if not (0 <= minutes <= 99 and 0 <= seconds <= 59):
             return
 
+        log.debug(f"Displaying time: {minutes:02d}:{seconds:02d}")
         segments = [
             self.CHAR_MAP[str(minutes // 10)],
             self.CHAR_MAP[str(minutes % 10)],
@@ -118,16 +129,19 @@ class TM1637:
         self._write_display_control()
 
     def clear(self):
+        log.debug("Clearing display")
         self._write_segments([0, 0, 0, 0])
 
     def cleanup(self):
-        print("[INFO]   Shutting down display...")
+        log.info("Shutting down display...")
         self.config.remove_observer(self.update_brightness)
         self.clear()
         self.clk.close()
         self.dio.close()
+        log.ok("Display shutdown complete")
 
     def show_dashes(self):
+        log.debug("Showing dashes")
         segments = [self.CHAR_MAP['-']] * 4
         self._write_segments(segments, False)
 
@@ -135,6 +149,7 @@ class TM1637:
         if not isinstance(count, int) or count < 0 or count > 99:
             return
             
+        log.debug(f"Showing track total: {count}")
         segments = [
             self.CHAR_MAP[str(count // 10)],
             self.CHAR_MAP[str(count % 10)],
@@ -149,6 +164,7 @@ class TM1637:
             if not 1 <= number <= 99:
                 return
             
+            log.debug(f"Showing track number: {number}")
             num_str = f"{number:02d}"
             
             segments = [
@@ -169,6 +185,7 @@ class TM1637:
             if not 0 <= number <= 100:
                 return
                 
+            log.debug(f"Showing volume: {number}")
             if number == 100:
                 segments = [
                     self.CHAR_MAP['-'],

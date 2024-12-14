@@ -1,7 +1,21 @@
 #!/bin/bash
-echo "[INFO]   Starting shutdown process..."
-echo "[WAIT]   Stopping playback..."
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.info('Starting shutdown process...')
+"
+
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.wait('Stopping playback...')
+"
 mpc stop
 sleep 0.2
-echo "[WAIT]   Shutting down system..."
+
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.wait('Shutting down system...')
+"
 sudo systemctl poweroff

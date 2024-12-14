@@ -24,8 +24,8 @@
     "volume_display_duration": 3
   },
   "display": {
-    "brightness": 0,
-    "mode": "elapsed",
+    "brightness": 2,
+    "mode": "remaining",
     "pause_mode": {
       "blink_interval": 1
     },
@@ -53,8 +53,17 @@
       "artist_level": 2,
       "album_level": 3,
       "music_root": "/var/lib/mpd/music",
-      "preserve_levels": [2, 3, 4]
+      "preserve_levels": [
+        2,
+        3,
+        4
+      ]
     },
     "min_usb_size_gb": 4
+  },
+  "logging": {
+    "enable": true,
+    "level": "DEBUG",
+    "format": "[{level}] {message}"
   }
 }

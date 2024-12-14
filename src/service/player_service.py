@@ -1,13 +1,18 @@
 import time
 import signal
-from core.config import Config
-from core.mpd_client import MPDClient
-from hardware.led.controller import LEDController
-from hardware.display.tm1637 import TM1637
-from hardware.button.controller import ButtonController
+import os
+from src.core.config import Config
+from src.core.mpd_client import MPDClient
+from src.hardware.led.controller import LEDController
+from src.hardware.display.tm1637 import TM1637
+from src.hardware.button.controller import ButtonController
+from src.utils.logger import Logger
+
+log = Logger()
 
 class PlayerService:
     def __init__(self):
+        log.debug("Initializing player service components")
         self.config = Config()
         self.mpd = MPDClient()
         self.led_controller = LEDController()
@@ -16,6 +21,11 @@ class PlayerService:
         self.button_controller = ButtonController()
         self.config.add_observer(self._handle_config_update)
         self.running = False
+        self._load_config()
+        log.ok("Player service components initialized")
+
+    def _load_config(self):
+        log.debug("Loading service configuration")
         self.display_mode = self.config.get('display.mode', 'elapsed')
         self.last_volume = None
         self.volume_display_until = 0
@@ -27,13 +37,11 @@ class PlayerService:
         self.last_track_number = None
         self.track_display_until = 0
         self.pause_last_toggle = 0
-        self.pause_blink_interval = self.config.get('display.pause_mode.blink_interval', 1)
-        self.track_number_time = self.config.get('display.play_mode.track_number_time', 2)
         self._load_display_config()
 
     def _load_display_config(self):
+        log.debug("Loading display configuration")
         self._load_stop_mode_config()
-        
         self.pause_blink_interval = self.config.get('display.pause_mode.blink_interval', 1)
         self.track_number_time = self.config.get('display.play_mode.track_number_time', 2)
 
@@ -45,6 +53,7 @@ class PlayerService:
         }
 
     def _handle_config_update(self):
+        log.debug("Handling configuration update")
         self.display_mode = self.config.get('display.mode', 'elapsed')
         self._load_display_config()
 
@@ -59,6 +68,7 @@ class PlayerService:
         if current_time - self.stop_state_changed_at >= current_duration:
             self.stop_display_state = (self.stop_display_state + 1) % 3
             self.stop_state_changed_at = current_time
+            log.debug(f"Stop display state changed to {self.stop_display_state}")
         
         playlist_info = self.mpd.get_playlist_info()
         
@@ -86,6 +96,7 @@ class PlayerService:
             if track_number.isdigit():
                 track_num = int(track_number)
                 if 1 <= track_num <= 99:
+                    log.debug(f"Track changed to {track_num}")
                     self.track_display_until = time.time() + self.track_number_time
                     self.display.show_track_number(track_num)
 
@@ -152,17 +163,19 @@ class PlayerService:
     def show_volume(self, status):
         try:
             current_volume = int(status.get('volume', '0'))
+            log.debug(f"Displaying volume: {current_volume}")
             self.display.show_volume(current_volume)
             self.volume_display_until = time.time() + self.config.get('timing.volume_display_duration', 3)
         except (ValueError, TypeError):
             return
 
     def start(self):
-        print("[INFO]   Player Service started")
-        print("[INFO]   Waiting for MPD connection...")
+        log.info("Starting player service")
+        log.wait("Waiting for MPD connection...")
         self.running = True
         
         def handle_signal(signum, frame):
+            log.info("Received shutdown signal")
             self.running = False
         
         signal.signal(signal.SIGTERM, handle_signal)
@@ -197,10 +210,20 @@ class PlayerService:
             self.cleanup()
 
     def cleanup(self):
-        print("[INFO]   Shutting down Player Service...")
+        log.info("Shutting down player service")
         self.config.remove_observer(self._handle_config_update)
         self.led_controller.cleanup()
         self.display.cleanup()
         self.button_controller.cleanup()
         self.mpd.close()
         self.config.stop_observer()
+        log.ok("Player service shutdown complete")
+
+    def _handle_script(self, script_name):
+        script_path = self.config.get(f'paths.{script_name}')
+        if not script_path:
+            log.error(f"Script path not configured: {script_name}")
+            return
+        if not os.path.exists(script_path):
+            log.error(f"Script not found: {script_path} ({script_name})")
+            return

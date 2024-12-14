@@ -1,3 +1,7 @@
 from .storage import find_usb_drive, copy_directory
+from .logger import Logger
 
-__all__ = ["find_usb_drive", "copy_directory"] 
+log = Logger()
+log.debug("Initializing utility modules")
+
+__all__ = ["find_usb_drive", "copy_directory", "Logger"] 
