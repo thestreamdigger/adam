@@ -22,7 +22,7 @@ class PlayerService:
         self.config.add_observer(self._handle_config_update)
         self.running = False
         self._load_config()
-        log.ok("Player service components initialized")
+        log.ok("Player service is fully initialized")
 
     def _load_config(self):
         log.debug("Loading service configuration")

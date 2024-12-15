@@ -13,10 +13,13 @@ log = Logger()
 
 def print_banner():
     banner = """
+
  ▗▄▖    ▐▌▗▞▀▜▌▄▄▄▄      ▗▞▀▀▘▄▄▄   ▄▄▄     ▗▖  ▗▖▗▄▄▖ ▗▄▄▄  
 ▐▌ ▐▌   ▐▌▝▚▄▟▌█ █ █     ▐▌  █   █ █        ▐▛▚▞▜▌▐▌ ▐▌▐▌  █ 
 ▐▛▀▜▌▗▞▀▜▌     █   █     ▐▛▀▘▀▄▄▄▀ █        ▐▌  ▐▌▐▛▀▘ ▐▌  █ 
 ▐▌ ▐▌▝▚▄▟▌               ▐▌                 ▐▌  ▐▌▐▌   ▐▙▄▄▀ 
+v0.2.0
+
 """
     return banner
 
@@ -26,7 +29,7 @@ def main():
     try:
         log.wait("Initializing player service")
         service = PlayerService()
-        log.ok("Player service initialized")
+        log.ok("Player service is ready")
         
         service.start()
     except Exception as e:
