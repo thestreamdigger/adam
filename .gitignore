@@ -1,12 +1,13 @@
+# System files
+.DS_Store
+Thumbs.db
 
-# Python bytecode and cache
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-
-# Build and distribution directories
 build/
 develop-eggs/
 dist/
@@ -27,16 +28,18 @@ wheels/
 venv/
 env/
 ENV/
-.env
-.venv
-
-# macOS system files
-.DS_Store
-**/.DS_Store
 
 # IDEs and editors
 .idea/
 .vscode/
 *.swp
 *.swo
-*~ 
+
+# Local configuration files
+src/settings.json
+
+# Cache directories
+~/.cache/*
+
+# Development files
+docs/ROADMAP.md

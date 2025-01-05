@@ -445,10 +445,10 @@ nano config/settings.json
 sudo nano /etc/systemd/system/adam.service
 ```
 
-An example service configuration file is available at `examples/adam.example.service`. You can copy it directly:
+An example service configuration file is available at `adam.example.service`. You can copy it directly:
 ```bash
 # Copy example service file
-sudo cp examples/adam.example.service /etc/systemd/system/adam.service
+sudo cp adam.example.service /etc/systemd/system/adam.service
 ```
 
 Or create it manually with the following content:

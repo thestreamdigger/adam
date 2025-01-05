@@ -1,13 +1,33 @@
 #!/bin/bash
-echo "[DEBUG] Checking consume state"
+
+PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")"
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.debug('Checking consume state')
+"
 
 consume_state=$(mpc status | grep -o 'consume: on\|consume: off')
 if [[ $consume_state == "consume: on" ]]; then
-    echo "[INFO] Disabling consume mode"
+    python3 -c "
+    from src.utils.logger import Logger
+    log = Logger()
+    log.info('Disabling consume mode')
+    "
     mpc consume off
 else
-    echo "[INFO] Enabling consume mode"
+    python3 -c "
+    from src.utils.logger import Logger
+    log = Logger()
+    log.info('Enabling consume mode')
+    "
     mpc consume on
 fi
 
-echo "[OK] Consume state updated"
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.ok('Consume state updated')
+"

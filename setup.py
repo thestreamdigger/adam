@@ -9,12 +9,12 @@ setup(
     install_requires=[
         "python-mpd2>=3.1.1",
         "gpiozero>=2.0.1",
-        "watchdog>=6.0.0",
         "lgpio>=0.2.2.0",
         "psutil>=5.8.0",
     ],
-    author="StreamDigger",
-    description="Adam for MPD",
+    author="Streamdigger",
+    description="A segmented display interface for moOde audio player",
+    license="GNU General Public License v3.0",
     package_data={
         'adam': ['config/*.json'],
     },

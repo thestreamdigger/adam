@@ -1,4 +1,8 @@
 #!/bin/bash
+
+PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")"
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
 python3 -c "
 from src.utils.logger import Logger
 log = Logger()

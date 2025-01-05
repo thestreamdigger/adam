@@ -1,4 +1,5 @@
-from gpiozero import LED
+from gpiozero import PWMLED
+from gpiozero.pins.lgpio import LGPIOFactory
 from src.core.config import Config
 from src.utils.logger import Logger
 
@@ -8,49 +9,93 @@ class LEDController:
     def __init__(self):
         log.debug("Initializing LED controller")
         self.config = Config()
+        
+        led_config = self.config.get('gpio.leds', {})
+        pwm_config = led_config.get('pwm', {})
+        self.pwm_frequency = pwm_config.get('frequency', 1000)
+        
+        self._brightness_cache = None
+        
+        pin_factory = LGPIOFactory()
+        
+        self.leds = {
+            'repeat': {'led': PWMLED(led_config['repeat'], 
+                                   frequency=self.pwm_frequency,
+                                   pin_factory=pin_factory), 
+                      'state': False},
+            'random': {'led': PWMLED(led_config['random'], 
+                                   frequency=self.pwm_frequency,
+                                   pin_factory=pin_factory), 
+                      'state': False},
+            'single': {'led': PWMLED(led_config['single'], 
+                                   frequency=self.pwm_frequency,
+                                   pin_factory=pin_factory), 
+                      'state': False},
+            'consume': {'led': PWMLED(led_config['consume'], 
+                                    frequency=self.pwm_frequency,
+                                    pin_factory=pin_factory), 
+                      'state': False}
+        }
+        
+        log.info("Setting up LEDs...")
         self._setup_leds()
-        self.config.add_observer(self._setup_leds)
         log.ok("LED controller initialized")
+        self._last_status = {}
 
     def _setup_leds(self):
-        log.info("Setting up LEDs...")
-        led_pins = self.config.get('gpio.leds')
-        self.leds = {
-            'repeat': LED(led_pins['repeat']),
-            'random': LED(led_pins['random']),
-            'single': LED(led_pins['single']),
-            'consume': LED(led_pins['consume'])
-        }
-        log.ok("LEDs setup complete")
+        try:
+            display_level = self.config.get('display.brightness', 4)
+            display_levels = self.config.get('display.brightness_levels.display', [2, 4, 7])
+            led_levels = self.config.get('display.brightness_levels.led', [25, 50, 100])
+            
+            index = display_levels.index(display_level)
+            brightness = led_levels[index] / 100.0
+            
+            for led_info in self.leds.values():
+                if led_info['state']:
+                    led_info['led'].value = brightness
+                    
+            log.debug(f"LED brightness set to {brightness*100}%")
+            
+        except Exception as e:
+            log.error(f"LED setup failed: {e}")
 
     def update_from_mpd_status(self, status):
-        if status is None:
-            log.debug("No MPD status, turning off all LEDs")
-            self.all_off()
+        if not status:
             return
-
+            
         state_map = {
             'repeat': status.get('repeat', '0') == '1',
             'random': status.get('random', '0') == '1',
             'single': status.get('single', '0') == '1',
             'consume': status.get('consume', '0') == '1'
         }
-
-        for led_name, state in state_map.items():
-            if state:
-                self.leds[led_name].on()
-                log.debug(f"LED {led_name}: ON")
-            else:
-                self.leds[led_name].off()
-                log.debug(f"LED {led_name}: OFF")
+        
+        if state_map != self._last_status:
+            display_level = self.config.get('display.brightness', 4)
+            display_levels = self.config.get('display.brightness_levels.display', [2, 4, 7])
+            led_levels = self.config.get('display.brightness_levels.led', [25, 50, 100])
+            index = display_levels.index(display_level)
+            brightness = led_levels[index] / 100.0
+            
+            for led_name, state in state_map.items():
+                if state != self._last_status.get(led_name):
+                    led_info = self.leds.get(led_name)
+                    if led_info:
+                        led_info['state'] = state
+                        led_info['led'].value = brightness if state else 0
+                        
+            self._last_status = state_map.copy()
 
     def all_off(self):
         log.debug("Turning off all LEDs")
-        for led in self.leds.values():
-            led.off()
+        for led_info in self.leds.values():
+            led_info['led'].value = 0
+            led_info['state'] = False
 
     def cleanup(self):
         log.info("Shutting down LEDs...")
-        self.config.remove_observer(self._setup_leds)
         self.all_off()
+        for led_info in self.leds.values():
+            led_info['led'].close()
         log.ok("LED controller shutdown complete")

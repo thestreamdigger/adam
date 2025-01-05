@@ -2,7 +2,6 @@
 import sys
 import os
 
-# Adiciona o diretório pai (raiz do projeto) ao Python Path
 PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 
@@ -13,18 +12,17 @@ log = Logger()
 
 def print_banner():
     banner = """
-
- ▗▄▖    ▐▌▗▞▀▜▌▄▄▄▄      ▗▞▀▀▘▄▄▄   ▄▄▄     ▗▖  ▗▖▗▄▄▖ ▗▄▄▄  
-▐▌ ▐▌   ▐▌▝▚▄▟▌█ █ █     ▐▌  █   █ █        ▐▛▚▞▜▌▐▌ ▐▌▐▌  █ 
-▐▛▀▜▌▗▞▀▜▌     █   █     ▐▛▀▘▀▄▄▄▀ █        ▐▌  ▐▌▐▛▀▘ ▐▌  █ 
-▐▌ ▐▌▝▚▄▟▌               ▐▌                 ▐▌  ▐▌▐▌   ▐▙▄▄▀ 
-v0.2.0
-
+ ▗▄▖    ▐▌▗▞▀▜▌▄▄▄▄      ▗▞▀▀▘▄▄▄   ▄▄▄     ▗▖  ▗▖ ▄▄▄   ▗▄▖    ▐▌▗▞▀▚▖
+▐▌ ▐▌   ▐▌▝▚▄▟▌█ █ █     ▐▌  █   █ █        ▐▛▚▞▜▌█   █ ▐▌ ▐▌   ▐▌▐▛▀▀▘
+▐▛▀▜▌▗▞▀▜▌     █   █     ▐▛▀▘▀▄▄▄▀ █        ▐▌  ▐▌▀▄▄▄▀ ▐▌ ▐▌▗▞▀▜▌▝▚▄▄▖
+▐▌ ▐▌▝▚▄▟▌               ▐▌                 ▐▌  ▐▌      ▝▚▄▞▘▝▚▄▟▌     
+                                                                       
+Version 2.0.0 (2025) - Streamdigger
 """
     return banner
 
 def main():
-    log.info(print_banner())
+    print(print_banner())
     
     try:
         log.wait("Initializing player service")

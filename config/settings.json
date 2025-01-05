@@ -4,17 +4,28 @@
     "port": 6600
   },
   "gpio": {
-    "button": 16,
+    "button": 20,
     "display": {
       "clk": 15,
       "dio": 14
     },
     "leds": {
-      "repeat": 17,
-      "random": 27,
-      "single": 22,
-      "consume": 10,
-      "copy": 12
+      "repeat": 12,
+      "random": 13,
+      "single": 18,
+      "consume": 19,
+      "pwm": {
+        "frequency": 1000,
+        "pins": [12, 13, 18, 19]
+      }
+    },
+    "encoder": {
+      "enabled": false,
+      "pin_a": 23,
+      "pin_b": 24,
+      "poll_interval": 100,
+      "speed_factor": 2,
+      "volume_step": 3
     }
   },
   "timing": {
@@ -24,18 +35,25 @@
     "volume_display_duration": 3
   },
   "display": {
-    "brightness": 2,
-    "mode": "remaining",
+    "brightness": 4,
+    "brightness_levels": {
+      "led": [25, 50, 100],
+      "display": [2, 4, 7]
+    },
+    "mode": "elapsed",
     "pause_mode": {
       "blink_interval": 1
     },
     "play_mode": {
-      "track_number_time": 2
+      "track_number": {
+        "show_number": true,
+        "display_time": 2
+      }
     },
     "stop_mode": {
       "stop_symbol_time": 2,
       "track_total_time": 2,
-      "total_time_display": 2
+      "playlist_time": 2
     }
   },
   "paths": {
@@ -43,6 +61,8 @@
     "shutdown": "/home/pi/adam/scripts/shutdown.sh"
   },
   "copy": {
+    "led": 21,
+    "min_usb_size_gb": 4,
     "destination_skip_folders": [
       "NAS",
       "Music",
@@ -53,13 +73,15 @@
       "artist_level": 2,
       "album_level": 3,
       "music_root": "/var/lib/mpd/music",
-      "preserve_levels": [
-        2,
-        3,
-        4
-      ]
-    },
-    "min_usb_size_gb": 4
+      "preserve_levels": [2, 3, 4]
+    }
+  },
+  "updates": {
+    "trigger": {
+      "file": ".update_trigger",
+      "check_interval": 1,
+      "debounce_time": 0.1
+    }
   },
   "logging": {
     "enable": true,

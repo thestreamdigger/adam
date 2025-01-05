@@ -19,21 +19,20 @@ class TM1637:
     }
 
     def __init__(self):
-        log.debug("Initializing display")
+        log.debug("Initializing display controller")
         self.config = Config()
         self._setup_display()
-        self.config.add_observer(self.update_brightness)
-        log.ok("Display initialized")
+        log.ok("Display controller initialized")
 
     def _setup_display(self):
-        log.debug("Setting up display pins")
+        log.info("Setting up display hardware...")
         pins = self.config.get('gpio.display')
         self.clk = DigitalOutputDevice(pins['clk'])
         self.dio = DigitalOutputDevice(pins['dio'])
         self._brightness = self.config.get('display.brightness', 2)
         self._write_data_command()
         self._write_display_control()
-        log.ok("Display setup complete")
+        log.ok("Display hardware initialized")
 
     def _start(self):
         self.dio.on()
@@ -73,11 +72,10 @@ class TM1637:
         log.debug("Updating display brightness")
         new_brightness = self.config.get('display.brightness', 2)
         if new_brightness != self._brightness:
-            log.info(f"Changing brightness from {self._brightness} to {new_brightness}")
             self._brightness = new_brightness
             self._write_data_command()
             self._write_display_control()
-            log.ok("Brightness updated")
+            log.ok("Display brightness updated")
 
     def show_number(self, number, colon=False):
         if not isinstance(number, (int, float)):
@@ -88,7 +86,6 @@ class TM1637:
             return
             
         log.debug(f"Displaying number: {number}")
-
         digits = f"{abs(number):04d}"
         segments = []
         
@@ -134,7 +131,6 @@ class TM1637:
 
     def cleanup(self):
         log.info("Shutting down display...")
-        self.config.remove_observer(self.update_brightness)
         self.clear()
         self.clk.close()
         self.dio.close()
@@ -162,6 +158,7 @@ class TM1637:
         try:
             number = int(number)
             if not 1 <= number <= 99:
+                log.warning(f"Track number out of range: {number}")
                 return
             
             log.debug(f"Showing track number: {number}")
@@ -176,7 +173,8 @@ class TM1637:
             
             self._write_segments(segments, False)
             
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
+            log.error(f"Invalid track number format: {e}")
             return
 
     def show_volume(self, number):

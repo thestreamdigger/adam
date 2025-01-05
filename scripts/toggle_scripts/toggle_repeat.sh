@@ -1,13 +1,33 @@
 #!/bin/bash
-echo "[DEBUG] Checking repeat state"
+
+PROJECT_ROOT="$(dirname "$(dirname "$(dirname "$(readlink -f "$0")")")")"
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.debug('Checking repeat state')
+"
 
 repeat_state=$(mpc status | grep -o 'repeat: on\|repeat: off')
 if [[ $repeat_state == "repeat: on" ]]; then
-    echo "[INFO] Disabling repeat mode"
+    python3 -c "
+    from src.utils.logger import Logger
+    log = Logger()
+    log.info('Disabling repeat mode')
+    "
     mpc repeat off
 else
-    echo "[INFO] Enabling repeat mode"
+    python3 -c "
+    from src.utils.logger import Logger
+    log = Logger()
+    log.info('Enabling repeat mode')
+    "
     mpc repeat on
 fi
 
-echo "[OK] Repeat state updated"
+python3 -c "
+from src.utils.logger import Logger
+log = Logger()
+log.ok('Repeat state updated')
+"

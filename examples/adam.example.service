@@ -1,0 +1,19 @@
+[Unit]
+Description=Adam for moOde
+After=mpd.service
+Requires=mpd.service
+
+[Service]
+User=pi
+Group=pi
+WorkingDirectory=/home/pi/adam
+Environment=PYTHONPATH=/home/pi/adam
+Environment=PATH=/home/pi/adam/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/home/pi/adam/venv/bin/python3 src/main.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 import os
 import sys
+import socket
 
-# Adiciona o diretório raiz do projeto ao Python Path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 
 from src.service.usb_copy_service import USBCopyService
 from src.utils.logger import Logger
 
+log = Logger()
+
 def main():
-    log = Logger()
     try:
         log.info("Starting USB copy operation")
         copy_service = USBCopyService()

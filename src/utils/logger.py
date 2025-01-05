@@ -9,14 +9,25 @@ class Logger:
         "OK": 22
     }
 
-    def __init__(self, settings=None):
-        self.enabled = True
-        self.level = "INFO"
-        self.format = settings.get('logging', {}).get('format') if settings else "[{level}] {message}"
-        
-        if settings:
-            self.enabled = settings.get('logging', {}).get('enable', True)
-            self.level = settings.get('logging', {}).get('level', 'INFO').upper()
+    _instance = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.initialized = False
+        return cls._instance
+
+    def __init__(self):
+        if not self.initialized:
+            self.enabled = True
+            self.level = "INFO"
+            self.format = "[{level}] {message}"
+            self.initialized = True
+
+    def configure(self, settings):
+        self.enabled = settings.get('logging', {}).get('enable', True)
+        self.level = settings.get('logging', {}).get('level', 'INFO').upper()
+        self.format = settings.get('logging', {}).get('format', '[{level}] {message}')
 
     def _log(self, level, message):
         if not self.enabled or self.LEVELS[self.level] > self.LEVELS[level]:

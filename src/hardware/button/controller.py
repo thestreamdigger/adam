@@ -11,32 +11,49 @@ class ButtonController:
     def __init__(self):
         log.debug("Initializing button controller")
         self.config = Config()
+        self.button = None
         self._setup_button()
         self.last_command_time = 0
         self.press_start_time = None
-        self.config.add_observer(self._setup_button)
+        
+        log.info("Loading button timings...")
+        self.command_cooldown = self.config.get('timing.command_cooldown', 1)
+        self.long_press_time = self.config.get('timing.long_press_time', 2)
+        
+        log.info("Registering button handlers...")
+        self._setup_button()
+        
         log.ok("Button controller initialized")
 
     def _setup_button(self):
-        log.info("Setting up button...")
-        button_pin = self.config.get('gpio.button')
-        self.long_press_time = self.config.get('timing.long_press_time', 2)
-        
-        self.button = Button(
-            button_pin,
-            pull_up=True
-        )
-        
-        self.button.when_pressed = self._start_press
-        self.button.when_released = self._handle_release
+        log.info("Setting up button hardware...")
+        try:
+            if self.button:
+                self.button.close()
+                self.button = None
 
-        self.command_cooldown = self.config.get('timing.command_cooldown', 1)
-        log.ok("Button setup complete")
+            button_pin = self.config.get('gpio.button')
+            if not button_pin:
+                log.error("Button pin not configured")
+                return
 
-    def _start_press(self):
+            self.button = Button(
+                button_pin,
+                pull_up=True,
+                bounce_time=0.1
+            )
+            
+            self.button.when_pressed = self._on_press
+            self.button.when_released = self._on_release
+            log.ok("Button setup complete")
+            
+        except Exception as e:
+            log.error(f"Failed to setup button: {e}")
+
+    def _on_press(self):
         self.press_start_time = time.time()
 
-    def _handle_release(self):
+    def _on_release(self):
         if self.press_start_time is None:
             return
 
@@ -94,5 +111,7 @@ class ButtonController:
 
     def cleanup(self):
         log.debug("Cleaning up button controller")
-        self.config.remove_observer(self._setup_button)
+        if self.button:
+            self.button.close()
+            self.button = None
         log.ok("Button controller cleanup complete")

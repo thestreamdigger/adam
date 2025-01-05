@@ -1,6 +1,7 @@
 import time
 import signal
 import os
+import sys
 from src.core.config import Config
 from src.core.mpd_client import MPDClient
 from src.hardware.led.controller import LEDController
@@ -10,23 +11,36 @@ from src.utils.logger import Logger
 
 log = Logger()
 
+PROJECT_ROOT = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+DISPLAY_MODES = {
+    'ELAPSED': 'elapsed',
+    'REMAINING': 'remaining'
+}
+
 class PlayerService:
     def __init__(self):
-        log.debug("Initializing player service components")
+        log.debug("Initializing player service")
         self.config = Config()
         self.mpd = MPDClient()
+        
+        log.info("Setting up hardware controllers...")
         self.led_controller = LEDController()
         self.display = TM1637()
         self.display.show_dashes()
         self.button_controller = ButtonController()
-        self.config.add_observer(self._handle_config_update)
+        
         self.running = False
+        self.last_config_check = 0
+        self.last_song_id = None
+        
+        log.info("Loading service configurations...")
         self._load_config()
-        log.ok("Player service is fully initialized")
+        log.ok("Player service initialized")
 
     def _load_config(self):
         log.debug("Loading service configuration")
-        self.display_mode = self.config.get('display.mode', 'elapsed')
+        self.display_mode = self.config.get('display.mode', DISPLAY_MODES['ELAPSED'])
         self.last_volume = None
         self.volume_display_until = 0
         self.colon_state = False
@@ -34,7 +48,6 @@ class PlayerService:
         self.volume_update_interval = self.config.get('timing.volume_update_interval', 0.1)
         self.stop_display_state = 0
         self.stop_state_changed_at = 0
-        self.last_track_number = None
         self.track_display_until = 0
         self.pause_last_toggle = 0
         self._load_display_config()
@@ -49,13 +62,18 @@ class PlayerService:
         self.stop_mode_times = {
             'symbol': self.config.get('display.stop_mode.stop_symbol_time', 2),
             'tracks': self.config.get('display.stop_mode.track_total_time', 2),
-            'total': self.config.get('display.stop_mode.total_time_display', 2)
+            'total': self.config.get('display.stop_mode.playlist_time', 2)
         }
 
     def _handle_config_update(self):
-        log.debug("Handling configuration update")
-        self.display_mode = self.config.get('display.mode', 'elapsed')
+        log.info("Processing configuration update")
+        
+        self.display_mode = self.config.get('display.mode', DISPLAY_MODES['ELAPSED'])
         self._load_display_config()
+        
+        status = self.mpd.get_status()
+        if status:
+            self._update_display(status)
 
     def _update_stop_display(self):
         current_time = time.time()
@@ -89,24 +107,41 @@ class PlayerService:
         if not current_song:
             return
         
+        song_id = current_song.get('id', '0')
         track_number = current_song.get('track', '0')
         
-        if track_number and track_number != self.last_track_number:
-            self.last_track_number = track_number
+        track_config = self.config.get('display.play_mode.track_number', {})
+        show_number = track_config.get('show_number', True)
+        display_time = track_config.get('display_time', 2)
+
+        if show_number and ((song_id and song_id != self.last_song_id) or 
+                          (not hasattr(self, '_last_state') or self._last_state != 'play')):
+            self.last_song_id = song_id
+            
             if track_number.isdigit():
                 track_num = int(track_number)
                 if 1 <= track_num <= 99:
                     log.debug(f"Track changed to {track_num}")
-                    self.track_display_until = time.time() + self.track_number_time
+                    self.track_display_until = time.time() + display_time
                     self.display.show_track_number(track_num)
 
     def _update_pause_display(self, elapsed_time, total_time):
         phase = int(time.time() / self.pause_blink_interval) % 2
         
         if phase == 0:
-            minutes = int(float(elapsed_time)) // 60
-            seconds = int(float(elapsed_time)) % 60
-            self.display.show_time(minutes, seconds, True)
+            try:
+                if self.display_mode == DISPLAY_MODES['REMAINING'] and total_time != 'N/A':
+                    time_value = float(total_time) - float(elapsed_time)
+                else:
+                    time_value = float(elapsed_time)
+                
+                minutes, seconds = self._convert_time_to_minutes_seconds(time_value)
+                if minutes is not None:
+                    self.display.show_time(minutes, seconds, True)
+                else:
+                    self.display.show_dashes()
+            except (ValueError, TypeError):
+                self.display.show_dashes()
         else:
             self.display.clear()
 
@@ -121,7 +156,7 @@ class PlayerService:
 
     def _update_time_display(self, elapsed_time, total_time):
         try:
-            if self.display_mode == "remaining" and total_time != 'N/A':
+            if self.display_mode == DISPLAY_MODES['REMAINING'] and total_time != 'N/A':
                 time_value = float(total_time) - float(elapsed_time)
             else:
                 time_value = float(elapsed_time)
@@ -150,15 +185,18 @@ class PlayerService:
             current_song = self.mpd.get_current_song()
             self._check_track_change(current_song)
             
-            if current_time < self.track_display_until:
-                return
-                
-            self._update_time_display(elapsed_time, total_time)
+            if current_time >= self.track_display_until:
+                self._update_time_display(elapsed_time, total_time)
             
         elif state == 'pause':
             self._update_pause_display(elapsed_time, total_time)
         elif state == 'stop':
+            if not hasattr(self, '_last_state') or self._last_state != 'stop':
+                self.stop_display_state = 0
+                self.stop_state_changed_at = current_time
             self._update_stop_display()
+        
+        self._last_state = state
 
     def show_volume(self, status):
         try:
@@ -168,6 +206,40 @@ class PlayerService:
             self.volume_display_until = time.time() + self.config.get('timing.volume_display_duration', 3)
         except (ValueError, TypeError):
             return
+
+    def _check_config_updates(self):
+        current_time = time.time()
+        update_config = self.config.get('updates.trigger', {})
+        check_interval = update_config.get('check_interval', 1)
+        trigger_file = update_config.get('file', '.update_trigger')
+        debounce_time = update_config.get('debounce_time', 0.1)
+        
+        if (current_time - self.last_config_check) >= check_interval:
+            trigger_path = os.path.join(PROJECT_ROOT, 'config', trigger_file)
+            if os.path.exists(trigger_path):
+                log.debug("Configuration update triggered")
+                
+                time.sleep(debounce_time)
+                
+                self.config.load_config()
+                
+                new_brightness = self.config.get('display.brightness')
+                new_display_mode = self.config.get('display.mode')
+                
+                if new_brightness != self.display._brightness:
+                    log.debug("Updating brightness")
+                    self.display.update_brightness()
+                    self.led_controller._setup_leds()
+                
+                if new_display_mode != self.display_mode:
+                    log.debug("Updating display mode")
+                    self.display_mode = new_display_mode
+                    status = self.mpd.get_status()
+                    if status:
+                        self._update_display(status)
+                
+                os.unlink(trigger_path)
+            self.last_config_check = current_time
 
     def start(self):
         log.info("Starting player service")
@@ -184,6 +256,8 @@ class PlayerService:
         try:
             while self.running:
                 start_time = time.time()
+                
+                self._check_config_updates()
                 
                 status = self.mpd.get_status()
                 if status:
@@ -211,19 +285,8 @@ class PlayerService:
 
     def cleanup(self):
         log.info("Shutting down player service")
-        self.config.remove_observer(self._handle_config_update)
         self.led_controller.cleanup()
         self.display.cleanup()
         self.button_controller.cleanup()
         self.mpd.close()
-        self.config.stop_observer()
         log.ok("Player service shutdown complete")
-
-    def _handle_script(self, script_name):
-        script_path = self.config.get(f'paths.{script_name}')
-        if not script_path:
-            log.error(f"Script path not configured: {script_name}")
-            return
-        if not os.path.exists(script_path):
-            log.error(f"Script not found: {script_path} ({script_name})")
-            return

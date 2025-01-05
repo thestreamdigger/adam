@@ -13,44 +13,37 @@ class USBCopyService:
         log.debug("Initializing USB copy service")
         self.config = Config()
         self.mpd = MPDClient()
-        copy_led_pin = self.config.get('gpio.leds.copy')
-        self.copy_led = LED(copy_led_pin)
-        self.copy_led.off()
         
         copy_config = self.config.get('copy', {})
-        self.destination_skip_folders = copy_config.get('destination_skip_folders', [])
-        self.path_structure = copy_config.get('path_structure', {
-            'min_depth': 4,
-            'artist_level': 2,
-            'album_level': 3,
-            'music_root': '/var/lib/mpd/music',
-            'preserve_levels': [2, 3]
-        })
         self.min_usb_size = copy_config.get('min_usb_size_gb', 4)
-        log.ok("USB copy service initialized")
-
-    def _blink_error(self):
-        log.debug("Blinking error LED")
-        for _ in range(3):
-            self.copy_led.on()
-            time.sleep(0.2)
+        self.path_structure = copy_config.get('path_structure', {})
+        self.destination_skip_folders = copy_config.get('destination_skip_folders', [])
+        
+        copy_led_pin = copy_config.get('led')
+        if not copy_led_pin:
+            log.warning("Copy LED pin not configured")
+        self.copy_led = LED(copy_led_pin) if copy_led_pin else None
+        if self.copy_led:
             self.copy_led.off()
-            time.sleep(0.2)
+            log.debug(f"Copy LED initialized on GPIO {copy_led_pin}")
 
     def copy_current_track(self):
         try:
-            self.copy_led.on()
+            if self.copy_led:
+                self.copy_led.off()
+            
+            log.wait("Attempting to connect to MPD...")
+            self.mpd.connect()
+            log.ok("Connected to MPD at localhost:6600")
             
             song = self.mpd.get_current_song()
             if not song or 'file' not in song:
-                log.error("No track currently playing")
                 raise Exception("No track currently playing")
             
             log.info("=== USB DRIVE DETECTION ===")
-            usb_path = find_usb_drive(self.min_usb_size)
-            if not usb_path:
-                log.error("No compatible USB device found")
-                raise Exception("No compatible USB device found")
+            usb_info = find_usb_drive(self.min_usb_size)
+            if not usb_info:
+                raise Exception("No suitable USB drive found")
             
             log.info("=== PATH ANALYSIS ===")
             file_path = song['file']
@@ -80,7 +73,7 @@ class USBCopyService:
                     preserved_path = os.path.join(artist, album)
                     log.debug(f"Preserved path: {preserved_path}")
                     
-                    dest_dir = os.path.join(usb_path, preserved_path)
+                    dest_dir = os.path.join(usb_info, preserved_path)
                     log.debug(f"Destination directory: {dest_dir}")
                     
                     log.wait("Starting copy process...")
@@ -103,10 +96,17 @@ class USBCopyService:
             raise
             
         except Exception as e:
-            log.error(f"Copy failed: {str(e)}")
-            self._blink_error()
+            if self.copy_led:
+                log.debug("Error indication: blinking copy LED")
+                for _ in range(3):
+                    self.copy_led.on()
+                    time.sleep(0.2)
+                    self.copy_led.off()
+                    time.sleep(0.2)
             raise e
         
         finally:
-            self.copy_led.off()
+            if self.copy_led:
+                self.copy_led.off()
+                log.debug("Copy LED turned off")
 
