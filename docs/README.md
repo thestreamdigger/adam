@@ -368,31 +368,9 @@ Controls logging behavior in `src/utils/logger.py`.
 - Git
 - Internet connection for package installation
 
-### 2. Base System Setup
-```bash
-# Update system packages
-sudo apt update
-sudo apt upgrade -y
+### 2. Project Installation
 
-# Install required system packages
-sudo apt install -y \
-    python3-pip \
-    python3-venv \
-    git
-```
-
-### 3. Enable Required Interfaces
-1. Enable GPIO:
-```bash
-sudo raspi-config
-# Navigate to: Interface Options
-# Enable: GPIO
-# Reboot when prompted
-```
-
-### 4. Project Installation
-
-#### 4.1. Clone Repository
+#### 2.1. Clone Repository
 ```bash
 # Clone the repository
 cd /home/pi
@@ -404,7 +382,7 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-#### 4.2. Install Dependencies
+#### 2.2. Install Dependencies
 ```bash
 # Install Python packages
 pip install -e .
@@ -413,16 +391,16 @@ pip install -e .
 pip list | grep -E "python-mpd2|gpiozero|lgpio|psutil"
 ```
 
-#### 4.3. Configure Permissions
+#### 2.3. Configure Permissions
 ```bash
 # Make scripts executable
 sudo chmod +x fix_permissions.sh
 sudo ./fix_permissions.sh
 ```
 
-### 5. Configuration Setup
+### 3. Configuration Setup
 
-#### 5.1. Basic Configuration
+#### 3.1. Basic Configuration
 ```bash
 # Copy example configuration
 cp config/settings.example.json config/settings.json
@@ -431,28 +409,28 @@ cp config/settings.example.json config/settings.json
 nano config/settings.json
 ```
 
-#### 5.2. Important Settings to Review
+#### 3.2. Important Settings to Review
 - MPD connection details
 - GPIO pin assignments
 - Display brightness levels
 - Button timing parameters
 
-### 6. Service Installation
+### 4. Service Installation
 
-#### 6.1. Create Systemd Service
+#### 4.1. Create Systemd Service
 ```bash
 # Create service file
 sudo nano /etc/systemd/system/adam.service
 ```
 
-An example service configuration file is available at `adam.example.service`. You can copy it directly:
+An example service configuration file is available at `examples/adam.example.service`. You can copy it directly:
 ```bash
 # Copy example service file
-sudo cp adam.example.service /etc/systemd/system/adam.service
+sudo cp examples/adam.example.service /etc/systemd/system/adam.service
 ```
 
 Or create it manually with the following content:
-```ini
+```ini                                                               
 [Unit]
 Description=Adam for moOde
 After=mpd.service
@@ -476,7 +454,7 @@ WantedBy=multi-user.target
 
 > **Note**: The example file includes important additional settings such as `Environment=PATH` and `Environment=PYTHONPATH` which are essential for the service to work correctly with the Python virtual environment.
 
-#### 6.2. Enable and Start Service
+#### 4.2. Enable and Start Service
 ```bash
 # Reload systemd
 sudo systemctl daemon-reload
@@ -491,9 +469,9 @@ sudo systemctl start adam
 sudo systemctl status adam
 ```
 
-### 7. Verify Installation
+### 5. Verify Installation
 
-#### 7.1. Check Service Status
+#### 5.1. Check Service Status
 ```bash
 # View service logs
 journalctl -u adam -f
@@ -502,45 +480,26 @@ journalctl -u adam -f
 systemctl is-active adam
 ```
 
-#### 7.2. Test Hardware
+#### 5.2. Test Hardware
 1. Display should show "--:--"
 2. LEDs should reflect MPD status
 3. Button should respond to presses
 
-### 8. Troubleshooting
+### 6. Troubleshooting
 
-#### 8.1. Permission Issues
+#### 6.1. Permission Issues
 ```bash
 # Re-run permissions script
 sudo ./fix_permissions.sh
 ```
 
-#### 8.2. Service Issues
+#### 6.2. Service Issues
 ```bash
 # Check detailed service status
 sudo systemctl status adam -l
 
 # Check system logs
 sudo journalctl -u adam -n 50 --no-pager
-```
-
-### 9. Updates and Maintenance
-
-#### 9.1. Updating the Software
-```bash
-# Stop service
-sudo systemctl stop adam.service
-
-# Update repository
-cd /home/pi/adam
-git pull
-
-# Update dependencies
-source venv/bin/activate
-pip install -e .
-
-# Restart service
-sudo systemctl start adam.service
 ```
 
 ## License
