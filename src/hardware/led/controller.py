@@ -44,9 +44,9 @@ class LEDController:
 
     def _setup_leds(self):
         try:
-            display_level = self.config.get('display.brightness', 4)
-            display_levels = self.config.get('display.brightness_levels.display', [2, 4, 7])
-            led_levels = self.config.get('display.brightness_levels.led', [25, 50, 100])
+            display_level = self.config.get('display.brightness', 0)
+            display_levels = self.config.get('display.brightness_levels.display', [0, 2, 7])
+            led_levels = self.config.get('display.brightness_levels.led', [5, 25, 100])
             
             index = display_levels.index(display_level)
             brightness = led_levels[index] / 100.0
@@ -72,18 +72,19 @@ class LEDController:
         }
         
         if state_map != self._last_status:
-            display_level = self.config.get('display.brightness', 4)
-            display_levels = self.config.get('display.brightness_levels.display', [2, 4, 7])
-            led_levels = self.config.get('display.brightness_levels.led', [25, 50, 100])
-            index = display_levels.index(display_level)
-            brightness = led_levels[index] / 100.0
+            if self._brightness_cache is None:
+                display_level = self.config.get('display.brightness', 0)
+                display_levels = self.config.get('display.brightness_levels.display', [0, 2, 7])
+                led_levels = self.config.get('display.brightness_levels.led', [5, 25, 100])
+                index = display_levels.index(display_level)
+                self._brightness_cache = led_levels[index] / 100.0
             
             for led_name, state in state_map.items():
                 if state != self._last_status.get(led_name):
                     led_info = self.leds.get(led_name)
                     if led_info:
                         led_info['state'] = state
-                        led_info['led'].value = brightness if state else 0
+                        led_info['led'].value = self._brightness_cache if state else 0
                         
             self._last_status = state_map.copy()
 
@@ -99,3 +100,6 @@ class LEDController:
         for led_info in self.leds.values():
             led_info['led'].close()
         log.ok("LED controller shutdown complete")
+
+    def invalidate_brightness_cache(self):
+        self._brightness_cache = None

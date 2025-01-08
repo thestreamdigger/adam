@@ -13,7 +13,7 @@ setup(
         "psutil>=5.8.0",
     ],
     author="Streamdigger",
-    description="A segmented display interface for moOde audio player",
+    description="Minimalist moOde interface on Raspberry Pi with a TM1637 display delivering cool digital-retro flair",
     license="GNU General Public License v3.0",
     package_data={
         'adam': ['config/*.json'],

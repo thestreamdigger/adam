@@ -17,7 +17,7 @@ class ButtonController:
         self.press_start_time = None
         
         log.info("Loading button timings...")
-        self.command_cooldown = self.config.get('timing.command_cooldown', 1)
+        self.command_cooldown = self.config.get('timing.command_cooldown', 0.5)
         self.long_press_time = self.config.get('timing.long_press_time', 2)
         
         log.info("Registering button handlers...")

@@ -15,8 +15,13 @@
       "single": 18,
       "consume": 19,
       "pwm": {
-        "frequency": 1000,
-        "pins": [12, 13, 18, 19]
+        "frequency": 2000,
+        "pins": [
+          12,
+          13,
+          18,
+          19
+        ]
       }
     },
     "encoder": {
@@ -29,16 +34,24 @@
     }
   },
   "timing": {
-    "command_cooldown": 1,
+    "command_cooldown": 0.5,
     "long_press_time": 2,
-    "update_interval": 1,
+    "update_interval": 0.5,
     "volume_display_duration": 3
   },
   "display": {
-    "brightness": 4,
+    "brightness": 0,
     "brightness_levels": {
-      "led": [25, 50, 100],
-      "display": [2, 4, 7]
+      "led": [
+        5,
+        25,
+        100
+      ],
+      "display": [
+        0,
+        2,
+        7
+      ]
     },
     "mode": "elapsed",
     "pause_mode": {
@@ -73,19 +86,23 @@
       "artist_level": 2,
       "album_level": 3,
       "music_root": "/var/lib/mpd/music",
-      "preserve_levels": [2, 3, 4]
+      "preserve_levels": [
+        2,
+        3,
+        4
+      ]
     }
   },
   "updates": {
     "trigger": {
       "file": ".update_trigger",
-      "check_interval": 1,
+      "check_interval": 0.5,
       "debounce_time": 0.1
     }
   },
   "logging": {
     "enable": true,
-    "level": "DEBUG",
+    "level": "INFO",
     "format": "[{level}] {message}"
   }
 }

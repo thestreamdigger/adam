@@ -44,7 +44,7 @@ class PlayerService:
         self.last_volume = None
         self.volume_display_until = 0
         self.colon_state = False
-        self.default_update_interval = self.config.get('timing.update_interval', 1)
+        self.default_update_interval = self.config.get('timing.update_interval', 0.5)
         self.volume_update_interval = self.config.get('timing.volume_update_interval', 0.1)
         self.stop_display_state = 0
         self.stop_state_changed_at = 0
