@@ -16,12 +16,7 @@
       "consume": 19,
       "pwm": {
         "frequency": 2000,
-        "pins": [
-          12,
-          13,
-          18,
-          19
-        ]
+        "pins": [12, 13, 18, 19]
       }
     },
     "encoder": {
@@ -42,16 +37,8 @@
   "display": {
     "brightness": 0,
     "brightness_levels": {
-      "led": [
-        5,
-        25,
-        100
-      ],
-      "display": [
-        0,
-        2,
-        7
-      ]
+      "led": [5, 25, 100],
+      "display": [0, 2, 7]
     },
     "mode": "elapsed",
     "pause_mode": {
@@ -76,21 +63,13 @@
   "copy": {
     "led": 21,
     "min_usb_size_gb": 4,
-    "destination_skip_folders": [
-      "NAS",
-      "Music",
-      "Metal"
-    ],
+    "destination_skip_folders": ["NAS", "Music", "Metal"],
     "path_structure": {
       "min_depth": 4,
       "artist_level": 2,
       "album_level": 3,
       "music_root": "/var/lib/mpd/music",
-      "preserve_levels": [
-        2,
-        3,
-        4
-      ]
+      "preserve_levels": [2, 3, 4]
     }
   },
   "updates": {
