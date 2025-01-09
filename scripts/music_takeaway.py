@@ -11,7 +11,23 @@ from src.utils.logger import Logger
 
 log = Logger()
 
+BANNER = """
+▗▖  ▗▖█  ▐▌ ▄▄▄ ▄ ▗▞▀▘                    
+▐▛▚▞▜▌▀▄▄▞▘▀▄▄  ▄ ▝▚▄▖                    
+▐▌  ▐▌     ▄▄▄▀ █                         
+▐▌  ▐▌          █                         
+                                          
+▗▄▄▄▖▗▞▀▜▌█  ▄ ▗▞▀▚▖▗▞▀▜▌▄   ▄ ▗▞▀▜▌▄   ▄ 
+  █  ▝▚▄▟▌█▄▀  ▐▛▀▀▘▝▚▄▟▌█ ▄ █ ▝▚▄▟▌█   █ 
+  █       █ ▀▄ ▝▚▄▄▖     █▄█▄█       ▀▀▀█ 
+  █       █  █                      ▄   █ 
+                                     ▀▀▀  
+
+Version 0.1.0 (2025) - Streamdigger
+"""
+
 def main():
+    print(BANNER)
     try:
         log.info("Starting USB copy operation")
         copy_service = USBCopyService()

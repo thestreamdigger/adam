@@ -29,9 +29,6 @@ class USBCopyService:
 
     def copy_current_track(self):
         try:
-            if self.copy_led:
-                self.copy_led.off()
-            
             log.wait("Attempting to connect to MPD...")
             self.mpd.connect()
             log.ok("Connected to MPD at localhost:6600")
@@ -44,6 +41,10 @@ class USBCopyService:
             usb_info = find_usb_drive(self.min_usb_size)
             if not usb_info:
                 raise Exception("No suitable USB drive found")
+            
+            if self.copy_led:
+                self.copy_led.on()
+                log.debug("Copy LED turned on - starting copy process")
             
             log.info("=== PATH ANALYSIS ===")
             file_path = song['file']
