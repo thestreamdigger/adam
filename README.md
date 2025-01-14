@@ -3,24 +3,24 @@
 ## Overview & Background
 Adam is a project that blends hardware and software to recreate a CD player-style interface on a Raspberry Pi running moOde audio player—where you can literally watch the seconds tick away as the music plays, see the status lights come alive to indicate different functions, and even check how many tracks are loaded or the total runtime of the current album/playlist. It’s all glowingly presented in the same room where your music is playing, without the need to scroll or unlock screens (like on a tablet or a phone). The setup features a spartan 4-digit 7-segment LED display, five indicator LEDs, and a single multi-function push button—just enough for that straightforward, track-and-time display we all know from traditional CD players.
 
-I started—and still maintain—this project as a hobby while I was learning Python, driven by my interest in digital music and the desire for an audio streaming device that shows time and track info the way I had in mind.
+I started—and still maintain—this project as a hobby while I learn Python, driven only by the desire for an audio streaming device that shows time and track info the way I had in mind.
 
 ## What Has Been Achieved
-Adam has grown along with my coding skills, surpassing the initial goal of a single script driving the TM1637 display. The various toggle scripts now manage key playback modes (random, repeat, single, consume) by lighting up the appropriate LEDs, while the display can easily switch between showing elapsed or remaining time (on the fly), total runtime, or even the number of tracks (stop mode). USB copy operations were also introduced via a dedicated script, and the multi-function button was expanded to handle short and long presses for different controls.
+Adam has grown from the ground up along with my coding skills, surpassing the initial goal of a single script driving the TM1637 display. The various toggle scripts now manage key playback modes (random, repeat, single, consume) by lighting up the appropriate LEDs, while the display can easily switch between showing elapsed or remaining time (on the fly), total runtime, or even the number of tracks in the current playlist/album. USB copy operations (inspired by taping CDs) were also introduced via a dedicated script, and the multi-function button was expanded to handle short and long presses for different controls.
 
-Delivering these features required fine-tuning real-time GPIO interactions and code structure—a process that offered invaluable learning experiences. In essence, Adam now provides the streamlined, no-distractions user experience I originally envisioned.
+Delivering these features required fine-tuning real-time GPIO interactions and code structure—a process that offered me invaluable learning experiences. In essence, Adam now provides the streamlined, no-distractions user experience I originally envisioned.
 
 ## Hardware Constraints and Alternatives
 Working with GPIO on the Raspberry Pi does bring some limitations. Of its 40 pins, only four support hardware PWM, and two of those are typically used for I2S audio. This can complicate LED dimming if you also want to run a DAC over GPIO. Early on, I decided to use USB Audio output, which guided many of my design choices—like dedicating GPIO18 and GPIO19 to hardware PWM instead of I2S.
 
-While exploring other options, I came across Python-compatible microcontrollers—especially the Raspberry Pi Pico (RP2040)—which are both affordable and flexible for handling PWM. This path would avoid compromising GPIO I2S audio on the Pi.
+While exploring other options, I came across Python-compatible microcontrollers—especially the Raspberry Pi Pico (RP2040)—which are both affordable and flexible for handling PWM (among many other things). This path would avoid compromising GPIO I2S audio on the Pi.
 
 ## Future Development
 The hardware side of the project relies on a simple set of elements. One of my main goals was to gain practical experience working directly with GPIO pins. Even so, because of an user-friendly configuration file, it’s entirely possible to adapt the code to different pin layouts—or even port it to another hardware platform.
 
-Recently, I’ve been leaning toward UART connectivity for more universal integration. Nearly all SBC music streamers support USB for both control and data, offering a simpler foundation to build upon while freeing up the Pi’s GPIO for more custom hardware expansions. There’s also a lot of potential in turning Adam’s interface into a dedicated USB peripheral—tools like CircuitPython make that surprisingly straightforward.
+Recently, I’ve been leaning toward UART connectivity for more universal integration. Nearly all SBC music streamers support USB for both control and data, offering a simpler foundation to build upon while freeing up the Pi’s GPIO for more custom hardware expansions. There’s also a lot of potential in turning Adam’s interface into a dedicated USB peripheral—tool as CircuitPython makes that surprisingly straightforward.
 
-For now, development will likely focus on bug fixes or new ideas I pick up when I have time to refactor, while firmly keeping the original Adam hardware design for legacy purposes. Adam is a champion and will keep its rightful place, hopefully inspiring you to embark on your own projects. Building your own audio streaming devices may be challenging, but it’s incredibly rewarding once everything comes together.
+For now, development here will likely focus on bug fixes or new ideas I pick up when I have time to refactor, while firmly keeping the original Adam hardware design for legacy purposes. Adam is a champion and will keep its rightful place, hopefully inspiring you to embark on your own projects.
 
 ## Features
 
@@ -81,29 +81,29 @@ For now, development will likely focus on bug fixes or new ideas I pick up when 
 ### GPIO Pinout
 
 ```
-                 Raspberry Pi
-                  +--------+
-       3.3V  [1]  | o    o |  [2]  5V
- SDA1/GPIO2  [3]  | o    o |  [4]  5V
- SCL1/GPIO3  [5]  | o    o |  [6]  GND
-      GPIO4  [7]  | o    o |  [8]  GPIO14 (Display DIO)
-        GND  [9]  | o    o |  [10] GPIO15 (Display CLK)
-     GPIO17 [11]  | o    o |  [12] GPIO18 (Single LED)*
-     GPIO27 [13]  | o    o |  [14] GND
-     GPIO22 [15]  | o    o |  [16] GPIO23 (Encoder A)
-       3.3V [17]  | o    o |  [18] GPIO24 (Encoder B)
-     GPIO10 [19]  | o    o |  [20] GND
-      GPIO9 [21]  | o    o |  [22] GPIO25
-     GPIO11 [23]  | o    o |  [24] GPIO8
-        GND [25]  | o    o |  [26] GPIO7
-      GPIO0 [27]  | o    o |  [28] GPIO1
-      GPIO5 [29]  | o    o |  [30] GND
-      GPIO6 [31]  | o    o |  [32] GPIO12 (Repeat LED)*
-     GPIO13 [33]  | o    o |  [34] GND
-     GPIO19 [35]  | o    o |  [36] GPIO16 (Consume LED)*
-     GPIO26 [37]  | o    o |  [38] GPIO20 (Button)
-        GND [39]  | o    o |  [40] GPIO21 (Copy LED)
-                  +--------+
+                           Raspberry Pi
+                            +--------+
+                 3.3V  [1]  | o    o |  [2]  5V
+           SDA1/GPIO2  [3]  | o    o |  [4]  5V
+           SCL1/GPIO3  [5]  | o    o |  [6]  GND
+                GPIO4  [7]  | o    o |  [8]  GPIO14 (Display DIO)
+                  GND  [9]  | o    o |  [10] GPIO15 (Display CLK)
+               GPIO17 [11]  | o    o |  [12] GPIO18 (Single LED)*
+               GPIO27 [13]  | o    o |  [14] GND
+               GPIO22 [15]  | o    o |  [16] GPIO23 (Encoder A)
+                 3.3V [17]  | o    o |  [18] GPIO24 (Encoder B)
+               GPIO10 [19]  | o    o |  [20] GND
+                GPIO9 [21]  | o    o |  [22] GPIO25
+               GPIO11 [23]  | o    o |  [24] GPIO8
+                  GND [25]  | o    o |  [26] GPIO7
+                GPIO0 [27]  | o    o |  [28] GPIO1
+                GPIO5 [29]  | o    o |  [30] GND
+                GPIO6 [31]  | o    o |  [32] GPIO12 (Repeat LED)*
+               GPIO13 [33]  | o    o |  [34] GND
+GPIO19 (Consume LED)* [35]  | o    o |  [36] GPIO16
+               GPIO26 [37]  | o    o |  [38] GPIO20 (Button)
+                  GND [39]  | o    o |  [40] GPIO21 (Copy LED)
+                            +--------+
 
 * Hardware PWM enabled pins
 ```
@@ -245,7 +245,7 @@ Controls the connection to the MPD server. Used by `MPDClient` in `src/core/mpd_
         }
     },
     "encoder": {
-        "enabled": false,                 // Enable/disable encoder support
+        "enabled": false,                 // Enable/disable encoder support (currently relies on moOde's "rotenc" service)
         "pin_a": 23,                      // Encoder pin A
         "pin_b": 24,                      // Encoder pin B
         "poll_interval": 100,             // Polling rate in ms
